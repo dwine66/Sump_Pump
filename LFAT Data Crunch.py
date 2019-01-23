@@ -5,6 +5,8 @@
 ### Libraries
 import csv
 import numpy as np
+import scipy as sp
+import scipy.fftpack
 import pandas as pd
 import os
 import re
@@ -72,8 +74,9 @@ T2C_df = T2_df[int(T2C-(Sample_Rate/f_LFAT)):int(T2C+(Sample_Rate/f_LFAT))]
 #LFAT_df.set_index('created_at',inplace = True)
 #LFAT_df.index.name='Timestamp'
 #LFAT_df.columns = ['Alert Level','Milone Level','Float Sensor','Temp. (C)','Board V','Milone Raw','AD590 Raw', 'Unix Timestamp']
-time = pd.to_numeric(LFAT_df['time(sec)'])
-Disp = pd.to_numeric(LFAT_df['disp(mm)'])
+
+
+
 #print(Timestamp[1])
 
 ## Basic Plots
@@ -115,15 +118,15 @@ plt.figure(4,figsize=(9,3))
 plt.suptitle(filename + ': short-term noise')
 
 plt.subplot(131)
-plt.scatter(T1C_df['time(sec)'],T1C_df['disp(mm)'],s=1,c='c')
+plt.scatter(T1C_df['time(sec)'],T1C_df['disp(mm)'],s=1,c='y')
 plt.title('Tombstone 1')
 
 plt.subplot(132)
-plt.scatter(FSC_df['time(sec)'],FSC_df['disp(mm)'],s=1,c='c')
-plt.title('Full Speed 1')
+plt.scatter(FSC_df['time(sec)'],FSC_df['disp(mm)'],s=1,c='b')
+plt.title('Full Speed')
 
 plt.subplot(133)
-plt.scatter(T2C_df['time(sec)'],T2C_df['disp(mm)'],s=1,c='c')
+plt.scatter(T2C_df['time(sec)'],T2C_df['disp(mm)'],s=1,c='y')
 plt.title('Tombstone 2')
 
 
@@ -138,31 +141,48 @@ T2_s = T2_df['disp(mm)'].std()
 print('T1 mean, 1s:', T1_m, T1_s)
 print('FS mean, 1s:', FS_m, FS_s)
 print('T2 mean, 1s:', T2_m, T2_s)
+
+### FFT Analysis
+# https://ipython-books.github.io/101-analyzing-the-frequency-components-of-a-signal-with-a-fast-fourier-transform/
+FSC2_df = FS_df[int(FSC-(10*Sample_Rate/f_LFAT)):int(10*FSC+(Sample_Rate/f_LFAT))]
+
+time = pd.to_numeric(FSC2_df['time(sec)'])
+Disp = pd.to_numeric(FSC2_df['disp(mm)'])
+disp_fft = sp.fftpack.fft(Disp)
+disp_psd = np.abs(disp_fft)**2
+
+fftfreq = sp.fftpack.fftfreq(len(disp_psd),1/Sample_Rate)
+i = fftfreq > 0
+fig, ax = plt.subplots(1, 1, figsize=(8, 4))
+ax.plot(fftfreq[i], 10 * np.log10(disp_psd[i]))
+ax.set_xlim(0, 100)
+ax.set_xlabel('Frequency (Hz)')
+ax.set_ylabel('PSD (dB)')
+
+
 ### Boxcar Averages
+bc = 1000
+plt.figure(5,figsize=(10,4))
+plt.suptitle(filename + ": "+ str(bc) + " pt rolling statistics" )
+roll_mean = T1_df['disp(mm)'].rolling(bc).mean()
+roll_std = T1_df['disp(mm)'].rolling(bc).std()
+roll_max = T1_df['disp(mm)'].rolling(bc).max()
+roll_min = T1_df['disp(mm)'].rolling(bc).min()
+plt.subplot(121)
+plt.plot(T1_df['time(sec)'],roll_mean,'m.',ms=1)
+plt.plot(T1_df['time(sec)'],roll_max, 'm.',ms=1)
+plt.plot(T1_df['time(sec)'],roll_min, 'm.',ms=1)
+plt.title('Mean')
+plt.subplot(122)
+plt.plot(T1_df['time(sec)'],roll_std, 'm.',ms=1)
 
-bc = 100
-roll_mean = Disp.rolling(bc).mean()
-plt.plot(roll_mean)
-
-roll_std = Disp.rolling(bc).std()
-plt.plot(roll_std)
+plt.title('st. dev')
 
 # Basic Plotting
 #plt.ion()
 LFAT_df.plot('time(sec)','disp(mm)','scatter',style='+')
 
 plt.plot(time,Disp,'ro',ms=1)
-
-
-### FFT Analysis
-disp_fft = np.fft.fft(Disp)
-t = np.arange(256)
-sp = np.fft.fft(np.sin(t))
-freq = np.fft.fftfreq(t.shape[-1])
-plt.plot(freq, sp.real)
-plt.show()
-
-
 #disp_ts = pd.Series(LFAT_df['disp(mm)'],index='time(sec)')            
             #,title='LFAT Pump Water Depth (cm)')#, xlim=(len(Milone)-Toffset,len(Milone)))
 #print (Toffset)
@@ -179,7 +199,3 @@ plt.xlabel('Date')
 plt.ylabel('Water Level (cm)')
 plt.title('Water Level in LFAT vs. time')
 
-"""
-# Annotate specific data points
-for i in range(0,len(ss_df.index)):
-    plt.annotate(ss_df.index[i],xy=(np.array(ss_Density)[i],ss_Temp[i]),xycoords='data')
