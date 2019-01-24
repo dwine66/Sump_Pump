@@ -73,6 +73,8 @@ print (T1C,FSC,T2C)
 
 t_col = 'time(sec)'
 d_col = 'disp(mm)'
+LFAT_df['dummy']=LFAT_df[d_col]+0.01
+LFAT_df['dummy2']=LFAT_df[d_col]-0.01
 
 LFAT_SC_df = LFAT_df[[t_col,d_col]]
 # Single-channel stats
@@ -185,14 +187,46 @@ ax.set_xlabel('Frequency (Hz)')
 ax.set_ylabel('PSD (dB)')
 fig.show()
 
-
-### Multi-channel comparisons
+### 2-channel comparisons
 
 C1 = 'disp(mm)'
-C2 = 'disp(mm)'
+C2 = 'dummy'
 
-FS_MC_df = LFAT_df[[t_col,C1,C2]]
-FS_MC_diff = FS_MC_df[C1]-FS_MC_df[C2]
-FS_MC_diff[t_col]=FS_MC_df[t_col]
-FS_MC_diff = FS_MC_diff[tcol,C1,C2]
+FS_2C_df = LFAT_df[[t_col,C1,C2]]
+FS_2C_df['diff']= FS_2C_df[C1]-FS_2C_df[C2]
+
+plt.figure(7,figsize=(9,9))
+plt.suptitle(filename +  ': ' + C1+'-'+C2 + " displacement delta" )
+plt.subplot(311)
+plt.plot(FS_2C_df[t_col],FS_2C_df[C1], 'r.',ms=1)
+plt.subplot(312)
+plt.plot(FS_2C_df[t_col],FS_2C_df[C2], 'b.',ms=1)
+plt.subplot(313)
+plt.plot(FS_2C_df[t_col],FS_2C_df['diff'], 'm.',ms=1)
+
+### 3-channel comparisons
+
+C1 = 'disp(mm)'
+C2 = 'dummy'
+C3 = 'dummy2'
+
+FS_3C_df = LFAT_df
+FS_3C_df['diff12']= FS_3C_df[C1]-FS_3C_df[C2]
+FS_3C_df['diff13']= FS_3C_df[C1]-FS_3C_df[C3]
+FS_3C_df['diff23']= FS_3C_df[C2]-FS_3C_df[C3]
+
+plt.figure(8,figsize=(9,9))
+plt.suptitle(filename +  ': displacement deltas' )
+plt.subplot(331)
+plt.plot(FS_3C_df[t_col],FS_3C_df[C1], 'r.',ms=1)
+plt.subplot(332)
+plt.plot(FS_3C_df[t_col],FS_3C_df[C2], 'b.',ms=1)
+plt.subplot(333)
+plt.plot(FS_3C_df[t_col],FS_3C_df[C3], 'g.',ms=1)
+plt.subplot(334)
+plt.plot(FS_3C_df[t_col],FS_3C_df['diff12'], 'm.',ms=1)
+plt.subplot(337)
+plt.plot(FS_3C_df[t_col],FS_3C_df['diff13'], 'c.',ms=1)
+plt.subplot(338)
+plt.plot(FS_3C_df[t_col],FS_3C_df['diff23'], 'y.',ms=1)
 
