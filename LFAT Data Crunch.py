@@ -55,9 +55,9 @@ R2F = int(R2S+180000*SF)
 T2S = R2F+gap
 T2F = int(T2S + 900000*SF)
 
-T1C=int((T1F + T1S)/2)
-FSC=int((FSF + FSS)/2)
-T2C=int((T2F + T2S)/2)
+T1C=int((T1F+T1S)/2)
+FSC=int((FSF+FSS)/2)
+T2C=int((T2F+T2S)/2)
 
 T1_df = LFAT_df[T1S:T1F]
 R1_df = LFAT_df[R1S:R1F]
@@ -68,6 +68,16 @@ T2_df = LFAT_df[T2S:T2F]
 T1C_df = T1_df[int(T1C-(Sample_Rate/f_LFAT)):int(T1C+(Sample_Rate/f_LFAT))]
 FSC_df = FS_df[int(FSC-(Sample_Rate/f_LFAT)):int(FSC+(Sample_Rate/f_LFAT))]
 T2C_df = T2_df[int(T2C-(Sample_Rate/f_LFAT)):int(T2C+(Sample_Rate/f_LFAT))]
+
+##LFAT_df.drop('entry_id',axis=1,inplace = True)
+##Timestamp = pd.to_datetime(LFAT_df['created_at'])
+#LFAT_df.set_index('created_at',inplace = True)
+#LFAT_df.index.name='Timestamp'
+#LFAT_df.columns = ['Alert Level','Milone Level','Float Sensor','Temp. (C)','Board V','Milone Raw','AD590 Raw', 'Unix Timestamp']
+
+
+
+#print(Timestamp[1])
 
 ## Basic Plots
 # Full Run
@@ -148,7 +158,7 @@ ax.plot(fftfreq[i], 10 * np.log10(disp_psd[i]))
 ax.set_xlim(0, 100)
 ax.set_xlabel('Frequency (Hz)')
 ax.set_ylabel('PSD (dB)')
-fig.show()
+
 
 ### Boxcar Averages
 bc = 1000
@@ -168,4 +178,24 @@ plt.plot(T1_df['time(sec)'],roll_std, 'm.',ms=1)
 
 plt.title('st. dev')
 
+# Basic Plotting
+#plt.ion()
+LFAT_df.plot('time(sec)','disp(mm)','scatter',style='+')
+
+plt.plot(time,Disp,'ro',ms=1)
+#disp_ts = pd.Series(LFAT_df['disp(mm)'],index='time(sec)')            
+            #,title='LFAT Pump Water Depth (cm)')#, xlim=(len(Milone)-Toffset,len(Milone)))
+#print (Toffset)
+# Pull out Milone data and timestamp
+
+## Plot
+fig = plt.figure()
+ax1 = fig.add_subplot(1,1,1)
+#ax1.set_xscale('log')
+#ax1.set_yscale('log')
+ax1.grid(True,which="both",ls="-", color='0.65')
+ax1.plot(Milone)
+plt.xlabel('Date')
+plt.ylabel('Water Level (cm)')
+plt.title('Water Level in LFAT vs. time')
 
