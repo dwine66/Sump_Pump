@@ -21,6 +21,38 @@ def readcsv(fname):
     vname = pd.DataFrame(pd.read_csv(fname,na_values='n/a',header=0))
     return vname
 
+def boxcar(bc_width,Input_Frame,tb,dt,Title):
+    bc = bc_width
+    plt.figure(Title,figsize=(8,10))
+    BC_df = pd.DataFrame(index=Input_Frame.index, columns=[tb,dt])
+    BC_df[tb] = Input_Frame[tb]
+    BC_df[dt] = Input_Frame[dt]
+    plt.suptitle(filename +  '-' + dt + ": "+ str(bc) + " pt rolling statistics" )
+    roll_avg = BC_df[dt].rolling(bc).mean()
+    roll_std = BC_df[dt].rolling(bc).std()
+    roll_max = BC_df[dt].rolling(bc).max()
+    roll_min = BC_df[dt].rolling(bc).min()
+    
+    roll_range = round((roll_max-roll_min).mean(),3)
+    
+    print (roll_range)
+    
+    plt.subplot(211)
+    plt.plot(BC_df[tb],roll_avg, 'm.',ms=2)
+    plt.plot(BC_df[tb],roll_max, 'k.',ms=1)
+    plt.plot(BC_df[tb],roll_min, 'k.',ms=1)
+    plt.title('Mean with max/min.  Range: '+str(roll_range))
+    plt.xlabel('time (sec.)')
+    plt.ylabel('disp (mm)')
+    
+    plt.subplot(212)
+    plt.plot(BC_df[tb],roll_std, 'm.',ms=1)
+    plt.title('st. dev')
+    plt.ylabel('disp (mm)')
+    plt.xlabel('time (sec.)')
+    plt.show()
+    return()
+    
 ### Constants
 Sample_Rate = 10000
 f_LFAT = 25
@@ -80,7 +112,7 @@ C1 = 'Voltage_0'
 C2 = 'Voltage_1'
 C3 = 'Voltage_2'
 
-plt.figure(0,figsize=(9,9))
+plt.figure('Raw Data',figsize=(9,9))
 plt.suptitle(filename + ': Raw Data')
 plt.subplot(311)
 plt.scatter(LFAT_df[t_col],LFAT_df[C1],s=1,c='r')
@@ -92,7 +124,6 @@ plt.subplot(313)
 plt.scatter(LFAT_df[t_col],LFAT_df[C3],s=1,c='r')
 plt.title(filename +  ' ' + C3 + ': full run')
 plt.show()
-
 
 # Single-channel stats
 
@@ -149,21 +180,29 @@ plt.title('Ramp 2')
 plt.show()
 
 # Short-term noise plots
-plt.figure(4,figsize=(9,4))
+plt.figure('Short-Term Noise',figsize=(8,10))
 plt.suptitle(filename +  ' ' + d_col + ': short-term noise')
 
-plt.subplot(131)
+plt.subplot(311)
 plt.scatter(T1C_df[t_col],T1C_df[d_col],s=1,c='y')
 plt.title('Tombstone 1')
+plt.xlabel('time (sec.)')
+plt.ylabel('disp (mm)')
 
-plt.subplot(132)
+plt.subplot(312)
 plt.scatter(FSC_df[t_col],FSC_df[d_col],s=1,c='b')
 plt.title('Full Speed')
+plt.xlabel('time (sec.)')
+plt.ylabel('disp (mm)')
 
-plt.subplot(133)
+plt.subplot(313)
 plt.scatter(T2C_df[t_col],T2C_df[d_col],s=1,c='y')
 plt.title('Tombstone 2')
+plt.xlabel('time (sec.)')
+plt.ylabel('disp (mm)')
+
 plt.show()
+
 
 ## Short-term noise on tombstones
 T1_m = round(T1_df[d_col].mean(),3)
@@ -178,37 +217,13 @@ T1_r = round(T1_df[d_col].max()-T1_df[d_col].min(),3)
 FS_r = round(FS_df[d_col].max()-FS_df[d_col].min(),3)
 T2_r = round(T2_df[d_col].max()-T2_df[d_col].min(),3)
 
-print('T1 mean, 1s, range for channel ',d_col,': ', T1_m, T1_s,T1_r)
-print('FS mean, 1s, range for channel ',d_col,': ', FS_m, FS_s,FS_r)
-print('T2 mean, 1s, range for channel ',d_col,': ', T2_m, T2_s,T2_r)
+print('T1 mean, 1s, range for channel',d_col,': ', T1_m, T1_s,T1_r)
+print('FS mean, 1s, range for channel',d_col,': ', FS_m, FS_s,FS_r)
+print('T2 mean, 1s, range for channel',d_col,': ', T2_m, T2_s,T2_r)
 
 ### Boxcar Averages
-bc = 1000
-plt.figure('Boxcar Averages',figsize=(8,10))
-plt.suptitle(filename +  '-' + d_col + ": "+ str(bc) + " pt rolling statistics" )
-roll_avg = T1_df[d_col].rolling(bc).mean()
-roll_std = T1_df[d_col].rolling(bc).std()
-roll_max = T1_df[d_col].rolling(bc).max()
-roll_min = T1_df[d_col].rolling(bc).min()
 
-roll_range = round((roll_max-roll_min).mean(),3)
-
-print (roll_range)
-
-plt.subplot(211)
-plt.plot(T1_df[t_col],roll_avg, 'm.',ms=2)
-plt.plot(T1_df[t_col],roll_max, 'k.',ms=1)
-plt.plot(T1_df[t_col],roll_min, 'k.',ms=1)
-plt.title('Mean with max/min.  Range: '+str(roll_range))
-plt.xlabel('time (sec.)')
-plt.ylabel('disp (mm)')
-
-plt.subplot(212)
-plt.plot(T1_df[t_col],roll_std, 'm.',ms=1)
-plt.title('st. dev')
-plt.ylabel('disp (mm)')
-plt.xlabel('time (sec.)')
-plt.show()
+boxcar(1000,T1_df,'X_Value','Voltage_0','Tombstone 1 Boxcar')
 
 ### FFT Analysis
 # https://ipython-books.github.io/101-analyzing-the-frequency-components-of-a-signal-with-a-fast-fourier-transform/
@@ -238,24 +253,30 @@ fig.show()
 
 #C1 = 'disp(mm)'
 #C2 = 'dummy'
-Ca = 'Voltage_1'
-Cb = 'Voltage_2'
+Ca = 'Voltage_0'
+Cb = 'Voltage_1'
 
 FS_2C_df = LFAT_df[[t_col,Ca,Cb]]
 FS_2C_df['diff']= FS_2C_df[Ca]-FS_2C_df[Cb]
 
-plt.figure(7,figsize=(9,9))
+plt.figure('2-channel comparisions',figsize=(9,9))
 plt.suptitle(filename +  ': ' + Ca+'-'+Cb + " displacement delta" )
-plt.subplot(311)
+plt.subplot(411)
 plt.plot(FS_2C_df[t_col],FS_2C_df[Ca], 'r.',ms=1)
 
-plt.subplot(312)
+plt.subplot(412)
 plt.plot(FS_2C_df[t_col],FS_2C_df[Cb], 'b.',ms=1)
 
-plt.subplot(313)
+plt.subplot(413)
 plt.plot(FS_2C_df[t_col],FS_2C_df['diff'], 'm.',ms=1)
 plt.show()
 
+plt.subplot(414)
+plt.plot(FS_2C_df[t_col],FS_2C_df[Ca], 'r.',ms=1)
+plt.plot(FS_2C_df[t_col],FS_2C_df[Cb], 'b.',ms=1)
+plt.show()
+
+boxcar(1000,FS_2C_df,'X_Value','diff', 'Full Speed Slat Delta')
 ### 3-channel comparisons
 
 #C1 = 'Voltage_0'
@@ -294,3 +315,19 @@ a6.plot(FS_3C_df[t_col],FS_3C_df['diff23'], 'y.',ms=1)
 a6.set_title('2-3')
 
 Cfig.show()
+
+# All 3 on one axis w/bc averaging and time shift
+bc2 = 10
+All_r = LFAT_df.rolling(bc2).mean()
+All_r['v_shift'] = All_r['Voltage_0'].shift(80)
+All_r['diff'] = All_r['v_shift']-All_r[C2]
+plt.figure('Raw Data - all 3 on one axis',figsize=(9,6))
+plt.scatter(All_r[t_col],All_r[C1],s=1,c='r')
+plt.plot(All_r[t_col],All_r['v_shift'],'r-')
+plt.scatter(All_r[t_col],All_r[C2],s=1,c='b')
+plt.scatter(All_r[t_col],All_r[C3],s=1,c='c')
+
+plt.scatter(All_r[t_col],All_r['diff'],s=1,c='m')
+
+plt.title(filename +  ': full run')
+plt.show()
