@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 plt.style.use('ggplot')
 from datetime import datetime, timedelta
 import dateutil
+from dateutil.parser import parse
 
 ### Functions
 def readcsv(fname):
@@ -43,14 +44,16 @@ Sump_df.columns = HeaderList
 #pd.to_numeric(Sump_df['Milone_Level_(cm)'])
 
 # Make this a pandas time series
-Sump_df.set_index('Datestamp',inplace = True)
-pd.to_datetime(Sump_df.index)
+pd.to_datetime(Sump_df['Datestamp'])
+Sump_df.set_index(pd.DatetimeIndex(Sump_df['Datestamp']),inplace = True)
+
 #Sump_df.index.name='Datestamp'
 Sump_df.drop(columns=['index2'],inplace=True)
 
-Sump_df['Water_Level_(cm)'].plot()
-
 ## Plotting
-fig=plt.figure('test',figsize=(9,3))
-plt.plot(Sump_df.index,Sump_df['Water_Level_(cm)'],'r.')
-plt.show
+
+Sump_df['Water_Level_(cm)'].plot()
+#
+#fig=plt.figure('test',figsize=(9,3))
+#plt.plot(Sump_df['Water_Level_(cm)'],'r.')
+#plt.show
