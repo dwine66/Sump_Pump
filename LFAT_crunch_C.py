@@ -17,17 +17,17 @@ from datetime import datetime, timedelta
 import dateutil
 
 ### Functions
-def readcsv(fname):
-    vname = pd.DataFrame(pd.read_csv(fname,na_values='n/a',header=0, names=['X_Value','Laser 1','Laser 2', 'Laser 3','Comments']))
+def readcsv(fname,Header_lst):
+    vname = pd.DataFrame(pd.read_csv(fname,na_values='n/a',header=0, names=Header_lst))
     return vname
 
 def boxcar(bc_width,Input_Frame,tb,dt,Title):
     bc = bc_width
-    plt.figure(Title,figsize=(8,10))
+
     BC_df = pd.DataFrame(index=Input_Frame.index, columns=[tb,dt])
     BC_df[tb] = Input_Frame[tb]
     BC_df[dt] = Input_Frame[dt]
-    plt.suptitle(filename +  '-' + dt + ": "+ str(bc) + " pt rolling statistics" )
+    
     roll_avg = BC_df[dt].rolling(bc).mean()
     roll_std = BC_df[dt].rolling(bc).std()
     roll_max = BC_df[dt].rolling(bc).max()
@@ -36,12 +36,16 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     roll_range = round((roll_max-roll_min).mean(),3)
     roll_mean = roll_avg.mean()
     
-    print (roll_mean, roll_range)
+    print ('Mean:',round(roll_mean,3), 'Range:',roll_range)
     
+    plt.figure(Title,figsize=(8,10))   
+    plt.suptitle(filename +  '-' + dt + ": "+ str(bc) + " pt rolling statistics" )
+    plt.subplots_adjust(hspace=0.5)
+
     plt.subplot(311)
-    plt.plot(BC_df[tb],roll_avg, 'm.',ms=2)
-    plt.plot(BC_df[tb],roll_max, 'k.',ms=1)
-    plt.plot(BC_df[tb],roll_min, 'k.',ms=1)
+    plt.plot(BC_df[tb],roll_avg, 'm.',ms=1)
+   #plt.plot(BC_df[tb],roll_max, 'k.',ms=1)
+    #plt.plot(BC_df[tb],roll_min, 'k.',ms=1)
     plt.title('Mean with max/min.  Range: '+str(roll_range))
     plt.xlabel('time (sec.)')
     plt.ylabel('disp (mm)')
@@ -53,21 +57,24 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     plt.xlabel('time (sec.)')
     
     plt.subplot(313)
+    plt.title('stability')
     plt.plot(BC_df[tb],roll_avg-roll_mean, 'm.',ms=2)
+    plt.xlabel('time (sec.)')
+    plt.ylabel('disp (mm)')
     plt.show()
     return()
     
 ### Constants
 Sample_Rate = 10000
 f_LFAT = 25
-
+Headers = ['time (sec)','Baseplate (1)','Slat 1a (2)', 'Slat 1b (3)','Comments']
 ### Variables
 T_LFAT = 1/f_LFAT
 pts_cycle=Sample_Rate/f_LFAT
 
 ### Main Code
 #WKdir='S:\\Dave\\QH\\BBP\\LFAT Pump\\Data\\'
-WKdir='C:\\Users\\dwine\\Desktop\\'
+WKdir='C:\\Users\\dwine\\Desktop\\LFAT-2L Data\\'
 #WKdir='C:\\Users\\Dave\Google Drive\\'
 #WKdir="U:\\Programs\\Projects\\DSF\\DST\\20190115 LFAT runs\\"
 os.chdir(WKdir)
@@ -80,8 +87,14 @@ filename='laser swapped 1 with 2_nh.txt'
 filename='laser 1-3 swap decoupled_nh.txt'
 filename='laser 1-3 swap decoupled_nh.txt'
 filename='4 slat no compensators 1500 RPM_nh_mod.txt'
-LFAT_df = readcsv(filename)
+LFAT_df = readcsv(filename,Headers)
 print (filename,' read OK')
+
+# Full Run Plot
+C0 = Headers[0]
+C1 = Headers[1]
+C2 = Headers[2]
+C3 = Headers[3]
 
 #Define test regimes
 gap = 1
@@ -91,7 +104,7 @@ SF = 1
 T1min = 1
 R1min = 0.33
 FSmin = 2
-R2min = .33
+R2min = .5
 T2min = 1
 
 T1S = 1
@@ -108,43 +121,57 @@ T2F = T2S + int(T2min*60*Sample_Rate*SF)
 #print(T1S,T1F,R1S,R1F,FSS,FSF,R2S,R2F,T2S,T2F)
 
 # Need to subtract out absolute reference otherwise indexing goes beyond end of dataframe
-T1C=int((T1F+T1S)/2)-T1S
-FSC=int((FSF+FSS)/2)-FSS
-T2C=int((T2F+T2S)/2)-T2S
+#T1C=int((T1F+T1S)/2)-T1S
+#FSC=int((FSF+FSS)/2)-FSS
+#T2C=int((T2F+T2S)/2)-T2S
 #print (T1C,FSC,T2C)
 T1C=int(T1S+(T1F-T1S)/2)
 FSC=int(FSS+(FSF-FSS)/2)
-T2C=int(T2C+(T2F+T2S)/2)
+T2C=int(T2S+(T2F+T2S)/2)
+print (T1C,FSC,T2C)
 
-t_col = 'X_Value'
+t_col = C0
+
 print ('Sample Rate (Hz): ',1/(LFAT_df[t_col][2]-LFAT_df[t_col][1]))
-
-# Full Run Plot
-C1 = 'Laser 1'
-C2 = 'Laser 2'
-C3 = 'Laser 3'
 
 plt.figure('Raw Data',figsize=(9,9))
 plt.suptitle(filename + ': Raw Data')
+plt.subplots_adjust(hspace = .25)
+
 plt.subplot(311)
 plt.scatter(LFAT_df[t_col],LFAT_df[C1],s=1,c='r')
 plt.title(filename +  ' ' + C1 + ': full run')
+plt.ylabel('disp (mm)')
+
 plt.subplot(312)
 plt.scatter(LFAT_df[t_col],LFAT_df[C2],s=1,c='r')
 plt.title(filename +  ' ' + C2 + ': full run')
+plt.ylabel('disp (mm)')
+
 plt.subplot(313)
 plt.scatter(LFAT_df[t_col],LFAT_df[C3],s=1,c='r')
 plt.title(filename +  ' ' + C3 + ': full run')
+plt.xlabel('time (sec.)')
+plt.ylabel('disp (mm)')
 plt.show()
 
 # Single-channel stats
-boxcar(1000,LFAT_df,'X_Value','Laser 1','Baseplate Boxcar')
-boxcar(1000,LFAT_df,'X_Value','Laser 2','Slat 1A Boxcar')
-boxcar(1000,LFAT_df,'X_Value','Laser 3','Slat 1B Boxcar')
+# Full run
+boxcar(100,LFAT_df,C0,C1,'Baseplate Boxcar - full run')
+boxcar(100,LFAT_df,C0,C2,'Slat 1A Boxcar - full run')
+boxcar(100,LFAT_df,C0,C3,'Slat 1B Boxcar - full run')
+
+T1MC_df = LFAT_df[T1S:T1F]
+R1MC_df = LFAT_df[R1S:R1F]
+FSMC_df = LFAT_df[FSS:FSF]
+R2MC_df = LFAT_df[R2S:R2F]
+T2MC_df = LFAT_df[T2S:T2F]
+
+boxcar(100,FSMC_df,C0,C1,'Baseplate Boxcar')
+boxcar(100,FSMC_df,C0,C2,'Slat 1A Boxcar')
+boxcar(100,FSMC_df,C0,C3,'Slat 1B Boxcar')
 
 d_col = C2
-#LFAT_df['dummy']=LFAT_df[d_col]+0.01
-#LFAT_df['dummy2']=LFAT_df[d_col]-0.01
 
 LFAT_SC_df = LFAT_df[[t_col,d_col]]
 
@@ -156,26 +183,31 @@ R2_df = LFAT_SC_df[R2S:R2F]
 T2_df = LFAT_SC_df[T2S:T2F]
 
 # Create two-cycle short-term blocks  at center of each part
-T1C_df = T1_df[int(T1C-(Sample_Rate/f_LFAT)):int(T1C+(Sample_Rate/f_LFAT))]
-FSC_df = FS_df[int(FSC-(Sample_Rate/f_LFAT)):int(FSC+(Sample_Rate/f_LFAT))]
-T2C_df = T2_df[int(T2C-(Sample_Rate/f_LFAT)):int(T2C+(Sample_Rate/f_LFAT))]
+T1C_df = T1_df[int((T1S-T1C)-(Sample_Rate/f_LFAT)):int((T1S-T1C)+(Sample_Rate/f_LFAT))]
+FSC_df = FS_df[int((FSC-FSS)-(Sample_Rate/f_LFAT)):int((FSC-FSS)+(Sample_Rate/f_LFAT))]
+T2C_df = T2_df[int((T2S-T2C)-(Sample_Rate/f_LFAT)):int((T2S-T2C)+(Sample_Rate/f_LFAT))]
 
 ## Basic Plots
 # Full Run
 plt.figure(1,figsize=(9,3))
 plt.scatter(LFAT_df[t_col],LFAT_df[d_col],s=1,c='r')
 plt.title(filename +  ' ' + d_col + ': full run')
+plt.xlabel('time (sec.)')
+plt.ylabel('disp (mm)')
 plt.show()
 
 # Full Speed Only
 plt.figure(2,figsize=(6,4))
 plt.scatter(FS_df[t_col],FS_df[d_col],s=1,c='b')
 plt.title(filename +  ' ' + d_col + ': full speed')
+plt.xlabel('time (sec.)')
+plt.ylabel('disp (mm)')
 plt.show()
 
 #Ramps and Tombstones
 plt.figure(3,figsize=(9,6))
 plt.suptitle(filename + ' ' + d_col + ': ramps and tombstones')
+plt.subplots_adjust(hspace=0.25)
 
 plt.subplot(221)
 plt.scatter(T1_df[t_col],T1_df[d_col],s=1,c='y')
@@ -244,9 +276,9 @@ boxcar(1000,FS_df,'X_Value','Laser 2','Tombstone 1 Boxcar')
 # https://ipython-books.github.io/101-analyzing-the-frequency-components-of-a-signal-with-a-fast-fourier-transform/
 
 FFT_tb = FS_df
-t_R1 = str(FFT_tb['X_Value'].iloc[0])
-t_R2 = str(FFT_tb['X_Value'].iloc[-1])
-FFT_C = FSC
+t_R1 = str(FFT_tb[C0].iloc[0])
+t_R2 = str(FFT_tb[C0].iloc[-1])
+FFT_C = FSC-FSS
 FSC2_df = FFT_tb[int(FFT_C-(10*Sample_Rate/f_LFAT)):int(10*FFT_C+(Sample_Rate/f_LFAT))]
 
 time = pd.to_numeric(FSC2_df[t_col])
@@ -297,18 +329,22 @@ boxcar(1000,FS_2C_df,'X_Value','diff', 'Full Speed Slat Delta')
 #C1 = 'Voltage_0'
 #C2 = 'Voltage_1'
 #C3 = 'Voltage_2'
-xl = FSC_df['X_Value'].iloc[0]
-xh = FSC_df['X_Value'].iloc[-1]
+xl = FSC_df[C0].iloc[0]
+xh = FSC_df[C0].iloc[-1]
 Ncyc = 5
 FS_3C_df = LFAT_df[FSC-Ncyc*int(Sample_Rate/f_LFAT):FSC+Ncyc*int(Sample_Rate/f_LFAT)]
 FS_3C_df['diff12']= FS_3C_df[C1]-FS_3C_df[C2]
 FS_3C_df['diff13']= FS_3C_df[C1]-FS_3C_df[C3]
 FS_3C_df['diff23']= FS_3C_df[C2]-FS_3C_df[C3]
 
+
+
 Cfig = plt.figure(8,figsize=(11,8))
 #Cfig.subplots(sharex=True)
 #Cfig.xlim = ([xl,xh])
 Cfig.suptitle(filename +  ': displacement deltas' )
+Cfig.subplots_adjust(hspace=0.35,wspace=0.25)
+
 a1 = plt.subplot(331)
 a1.plot(FS_3C_df[t_col],FS_3C_df[C1], 'r.',ms=1)
 a1.set_title(C1)
@@ -334,6 +370,16 @@ a6.plot(FS_3C_df[t_col],FS_3C_df['diff23'], 'y.',ms=1)
 a6.set_title('2-3')
 
 Cfig.show()
+
+# Differentials
+
+boxcar(100,FS_3C_df,C0,C1,'Boxcar - Baseplate')
+boxcar(100,FS_3C_df,C0,C2,'Boxcar - Slat 1a')
+boxcar(100,FS_3C_df,C0,C3,'Boxcar - Slat 1b')
+
+boxcar(100,FS_3C_df,C0,'diff12','Boxcar - diff12')
+boxcar(100,FS_3C_df,C0,'diff13','Boxcar - diff13')
+boxcar(100,FS_3C_df,C0,'diff23','Boxcar - diff23')
 
 # All 3 on one axis w/bc averaging and time shift
 bc2 = 10
