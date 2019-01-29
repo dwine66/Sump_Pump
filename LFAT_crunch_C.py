@@ -38,30 +38,35 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     
     print ('Mean:',round(roll_mean,3), 'Range:',roll_range)
     
-    plt.figure(Title,figsize=(8,10))   
+    plt.figure(filename+'-'+ Title,figsize=(8,10))   
     plt.suptitle(filename +  '-' + dt + ": "+ str(bc) + " pt rolling statistics" )
-    plt.subplots_adjust(hspace=0.5)
+    plt.subplots_adjust(hspace=0.25)
 
-    plt.subplot(311)
-    plt.plot(BC_df[tb],roll_avg, 'm.',ms=1)
-   #plt.plot(BC_df[tb],roll_max, 'k.',ms=1)
-    #plt.plot(BC_df[tb],roll_min, 'k.',ms=1)
-    plt.title('Mean with max/min.  Range: '+str(roll_range))
-    plt.xlabel('time (sec.)')
-    plt.ylabel('disp (mm)')
-    
-    plt.subplot(312)
-    plt.plot(BC_df[tb],roll_std, 'm.',ms=1)
-    plt.title('st. dev')
-    plt.ylabel('disp (mm)')
-    plt.xlabel('time (sec.)')
-    
-    plt.subplot(313)
-    plt.title('stability')
+#    plt.subplot(311)
+#    plt.plot(BC_df[tb],roll_avg, 'm.',ms=1)
+#   #plt.plot(BC_df[tb],roll_max, 'k.',ms=1)
+#    #plt.plot(BC_df[tb],roll_min, 'k.',ms=1)
+
+#    plt.xlabel('time (sec.)')
+#    plt.ylabel('disp (mm)')
+
+    plt.subplot(211)
+    plt.title('Stability around mean')
     plt.plot(BC_df[tb],roll_avg-roll_mean, 'm.',ms=2)
+    plt.ylim([-0.6,0.6])
     plt.xlabel('time (sec.)')
     plt.ylabel('disp (mm)')
     plt.show()
+    
+    plt.subplot(212)
+    plt.title('1s and Range: '+str(roll_range))
+    plt.plot(BC_df[tb],roll_std, 'm.',ms=1)
+    #plt.plot(BC_df[tb],roll_range, 'k.',ms=1)
+    plt.ylim([-0.6,0.6])
+    plt.title('st. dev')
+    plt.ylabel('disp (mm)')
+    plt.xlabel('time (sec.)')
+
     return()
     
 ### Constants
@@ -80,13 +85,13 @@ WKdir='C:\\Users\\dwine\\Desktop\\LFAT-2L Data\\'
 os.chdir(WKdir)
 
 # Read in LFAT pump data
-#filename='4 slat no compensators 1500 RPM_nh.txt'
-filename='motor only chocked_nh.txt'
-filename='1Khz lasers only_nh.txt'
-filename='laser swapped 1 with 2_nh.txt'
-filename='laser 1-3 swap decoupled_nh.txt'
-filename='laser 1-3 swap decoupled_nh.txt'
-filename='4 slat no compensators 1500 RPM_nh_mod.txt'
+filename='20190125_4S_C_1500_NoFeet.txt'
+#filename='motor only chocked_nh.txt'
+#filename='1Khz lasers only_nh.txt'
+#filename='laser swapped 1 with 2_nh.txt'
+#filename='laser 1-3 swap decoupled_nh.txt'
+#filename='laser 1-3 swap decoupled_nh.txt'
+filename='20190128_4S_NC_1500_Feet.txt'
 LFAT_df = readcsv(filename,Headers)
 print (filename,' read OK')
 
@@ -104,7 +109,7 @@ SF = 1
 T1min = 1
 R1min = 0.33
 FSmin = 2
-R2min = .5
+R2min = .333
 T2min = 1
 
 T1S = 1
@@ -118,13 +123,8 @@ R2F = R2S + int(R2min*60*Sample_Rate*SF)
 T2S = R2F + gap
 T2F = T2S + int(T2min*60*Sample_Rate*SF)
 
-#print(T1S,T1F,R1S,R1F,FSS,FSF,R2S,R2F,T2S,T2F)
-
 # Need to subtract out absolute reference otherwise indexing goes beyond end of dataframe
-#T1C=int((T1F+T1S)/2)-T1S
-#FSC=int((FSF+FSS)/2)-FSS
-#T2C=int((T2F+T2S)/2)-T2S
-#print (T1C,FSC,T2C)
+
 T1C=int(T1S+(T1F-T1S)/2)
 FSC=int(FSS+(FSF-FSS)/2)
 T2C=int(T2S+(T2F+T2S)/2)
@@ -187,7 +187,7 @@ T1C_df = T1_df[int((T1S-T1C)-(Sample_Rate/f_LFAT)):int((T1S-T1C)+(Sample_Rate/f_
 FSC_df = FS_df[int((FSC-FSS)-(Sample_Rate/f_LFAT)):int((FSC-FSS)+(Sample_Rate/f_LFAT))]
 T2C_df = T2_df[int((T2S-T2C)-(Sample_Rate/f_LFAT)):int((T2S-T2C)+(Sample_Rate/f_LFAT))]
 
-## Basic Plots
+### Basic Plots
 # Full Run
 plt.figure(1,figsize=(9,3))
 plt.scatter(LFAT_df[t_col],LFAT_df[d_col],s=1,c='r')
@@ -323,7 +323,6 @@ plt.plot(FS_2C_df[t_col],FS_2C_df[Ca], 'r.',ms=1)
 plt.plot(FS_2C_df[t_col],FS_2C_df[Cb], 'b.',ms=1)
 plt.show()
 
-boxcar(1000,FS_2C_df,'X_Value','diff', 'Full Speed Slat Delta')
 ### 3-channel comparisons
 
 #C1 = 'Voltage_0'
@@ -371,7 +370,7 @@ a6.set_title('2-3')
 
 Cfig.show()
 
-# Differentials
+### Differentials
 
 boxcar(100,FS_3C_df,C0,C1,'Boxcar - Baseplate')
 boxcar(100,FS_3C_df,C0,C2,'Boxcar - Slat 1a')
