@@ -36,29 +36,31 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     roll_range = round((roll_max-roll_min).mean(),3)
     roll_mean = roll_avg.mean()
     
-    print ('Mean:',round(roll_mean,3), 'Range:',roll_range)
+    print (Title,' Mean:',round(roll_mean,3), 'Range:',roll_range)
     
     plt.figure(filename+'-'+ Title,figsize=(8,10))   
     plt.suptitle(filename +  '-' + dt + ": "+ str(bc) + " pt rolling statistics" )
-    plt.subplots_adjust(hspace=0.25)
+    plt.subplots_adjust(hspace=0.35)
 
-#    plt.subplot(311)
-#    plt.plot(BC_df[tb],roll_avg, 'm.',ms=1)
-#   #plt.plot(BC_df[tb],roll_max, 'k.',ms=1)
-#    #plt.plot(BC_df[tb],roll_min, 'k.',ms=1)
+    plt.subplot(311)
+    plt.title('Absolute data')
+    plt.plot(BC_df[tb],roll_avg, 'm.',ms=1)
+   #plt.plot(BC_df[tb],roll_max, 'k.',ms=1)
+    #plt.plot(BC_df[tb],roll_min, 'k.',ms=1)
 
-#    plt.xlabel('time (sec.)')
-#    plt.ylabel('disp (mm)')
+    #plt.xlabel('time (sec.)')
+    plt.ylabel('disp (mm)')
 
-    plt.subplot(211)
+    plt.subplot(312)
     plt.title('Stability around mean')
     plt.plot(BC_df[tb],roll_avg-roll_mean, 'm.',ms=2)
+#    plt.errorbar(BC_df[tb],roll_avg-roll_mean,yerr=roll_std,'m.',ms=2)
     plt.ylim([-0.6,0.6])
-    plt.xlabel('time (sec.)')
+    #plt.xlabel('time (sec.)')
     plt.ylabel('disp (mm)')
     plt.show()
     
-    plt.subplot(212)
+    plt.subplot(313)
     plt.title('1s and Range: '+str(roll_range))
     plt.plot(BC_df[tb],roll_std, 'm.',ms=1)
     #plt.plot(BC_df[tb],roll_range, 'k.',ms=1)
@@ -72,17 +74,17 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
 ### Constants
 f_LFAT = 25
 #Headers = ['time (sec)','Slat_4C (1)','Slat_12R (2)', 'Slat_12L (3)','Comments']
-Headers = ['time (sec)','Slat_5_LE (1)','Slat_4_TE (2)', 'Slat_4_LE (3)','Comments']
+Headers = ['time (sec)','Slat_5_LE (1)','Slat_4_C (2)', 'Slat_3_TE (3)','Comments']
 
 ### Variables
 T_LFAT = 1/f_LFAT
-
 
 ### Data Load Code
 #WKdir='S:\\Dave\\QH\\BBP\\LFAT Pump\\Data\\'
 WKdir='C:\\Users\\dwine\\Desktop\\LFAT-2L Data\\'
 #WKdir='C:\\Users\\Dave\Google Drive\\'
 #WKdir="U:\\Programs\\Projects\\DSF\\DST\\20190115 LFAT runs\\"
+WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2L Data\\'
 os.chdir(WKdir)
 
 # Read in LFAT pump data
@@ -94,6 +96,7 @@ filename='20190125_4S_C_1500_NoFeet.txt'
 #filename='laser 1-3 swap decoupled_nh.txt'
 filename='20190128_4S_NC_1500_Feet.txt'
 filename='20190129_12S_Run 5_nh.txt'
+
 LFAT_df = readcsv(filename,Headers)
 print (filename,' read OK')
 
@@ -164,6 +167,15 @@ FS_3C_df['diff12']= FS_3C_df[C1]-FS_3C_df[C2]
 FS_3C_df['diff13']= FS_3C_df[C1]-FS_3C_df[C3]
 FS_3C_df['diff23']= FS_3C_df[C2]-FS_3C_df[C3]
 
+#FS_3C_C1m = FS_3C_df[C1].mean()
+#FS_3C_C2m = FS_3C_df[C2].mean()
+#FS_3C_C3m = FS_3C_df[C3].mean()
+#
+#FS_3C_df['mdiff12']= (FS_3C_df[C1]-FS_3C_C1m) - (FS_3C_df[C2]-FS_3C_C2m)
+#FS_3C_df['mdiff13']= (FS_3C_df[C1]-FS_3C_C1m) - (FS_3C_df[C1]-FS_3C_C3m)
+#FS_3C_df['mdiff23']= (FS_3C_df[C2]-FS_3C_C2m) - (FS_3C_df[C2]-FS_3C_C3m)
+
+
 ### Basic Plots
 # Raw Data
 plt.figure('Raw Data',figsize=(9,9))
@@ -196,6 +208,10 @@ boxcar(100,FS_3C_df,C0,C3,'Boxcar - ' + C3)
 boxcar(100,FS_3C_df,C0,'diff12','Boxcar - diff12')
 boxcar(100,FS_3C_df,C0,'diff13','Boxcar - diff13')
 boxcar(100,FS_3C_df,C0,'diff23','Boxcar - diff23')
+
+#boxcar(100,FS_3C_df,C0,'mdiff12','Boxcar - mdiff12')
+#boxcar(100,FS_3C_df,C0,'mdiff13','Boxcar - mdiff13')
+#boxcar(100,FS_3C_df,C0,'mdiff23','Boxcar - mdiff23')
 
 # Single-channel stats
 # Full run
