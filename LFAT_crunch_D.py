@@ -73,8 +73,9 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     
 ### Constants
 f_LFAT = 25
-#Headers = ['time (sec)','Slat_4C (1)','Slat_12R (2)', 'Slat_12L (3)','Comments']
-Headers = ['time (sec)','Slat_5_LE (1)','Slat_4_C (2)', 'Slat_3_TE (3)','Comments']
+Headers = ['time (sec)','Slat_4C (1)','Slat_12R (2)', 'Slat_12L (3)','Comments']
+Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_MD (L2)', 'Slat_3_TE (L3)','Comments']
+#Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_TE (L2)', 'Slat_4_C (L3)','Comments']
 
 ### Variables
 T_LFAT = 1/f_LFAT
@@ -84,7 +85,7 @@ T_LFAT = 1/f_LFAT
 WKdir='C:\\Users\\dwine\\Desktop\\LFAT-2L Data\\'
 #WKdir='C:\\Users\\Dave\Google Drive\\'
 #WKdir="U:\\Programs\\Projects\\DSF\\DST\\20190115 LFAT runs\\"
-WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2L Data\\'
+#WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2L Data\\'
 os.chdir(WKdir)
 
 # Read in LFAT pump data
@@ -95,7 +96,7 @@ filename='20190125_4S_C_1500_NoFeet.txt'
 #filename='laser 1-3 swap decoupled_nh.txt'
 #filename='laser 1-3 swap decoupled_nh.txt'
 filename='20190128_4S_NC_1500_Feet.txt'
-filename='20190129_12S_Run 5_nh.txt'
+filename='20190130 Run 1_nh.txt'
 
 LFAT_df = readcsv(filename,Headers)
 print (filename,' read OK')
