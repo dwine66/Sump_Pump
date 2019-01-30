@@ -62,7 +62,7 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     plt.title('1s and Range: '+str(roll_range))
     plt.plot(BC_df[tb],roll_std, 'm.',ms=1)
     #plt.plot(BC_df[tb],roll_range, 'k.',ms=1)
-    plt.ylim([-0.6,0.6])
+    plt.ylim([0,0.6])
     plt.title('st. dev')
     plt.ylabel('disp (mm)')
     plt.xlabel('time (sec.)')
@@ -72,7 +72,7 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
 ### Constants
 Sample_Rate = 10000
 f_LFAT = 25
-Headers = ['time (sec)','Baseplate (1)','Slat 1a (2)', 'Slat 1b (3)','Comments']
+Headers = ['time (sec)','Slat_4C (1)','Slat_12R (2)', 'Slat_12L (3)','Comments']
 ### Variables
 T_LFAT = 1/f_LFAT
 pts_cycle=Sample_Rate/f_LFAT
@@ -92,6 +92,7 @@ filename='20190125_4S_C_1500_NoFeet.txt'
 #filename='laser 1-3 swap decoupled_nh.txt'
 #filename='laser 1-3 swap decoupled_nh.txt'
 filename='20190128_4S_NC_1500_Feet.txt'
+filename='20190129_12S_Run 5_nh.txt'
 LFAT_df = readcsv(filename,Headers)
 print (filename,' read OK')
 
