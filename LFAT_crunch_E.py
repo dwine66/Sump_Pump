@@ -72,7 +72,7 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     return()
     
 ### Constants
-f_LFAT = 25
+f_LFAT = 3
 Headers = ['time (sec)','Slat_4C (1)','Slat_12R (2)', 'Slat_12L (3)','Comments']
 Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_MD (L2)', 'Slat_3_TE (L3)','Comments']
 #Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_TE (L2)', 'Slat_4_C (L3)','Comments']
@@ -89,13 +89,13 @@ WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2STB Data\\'
 os.chdir(WKdir)
 
 # Read in LFAT pump data
-filename='20190125_4S_C_1500_NoFeet.txt'
+#filename='20190125_4S_C_1500_NoFeet.txt'
 #filename='motor only chocked_nh.txt'
 #filename='1Khz lasers only_nh.txt'
 #filename='laser swapped 1 with 2_nh.txt'
 #filename='laser 1-3 swap decoupled_nh.txt'
 #filename='laser 1-3 swap decoupled_nh.txt'
-filename='20190128_4S_NC_1500_Feet.txt'
+#filename='20190128_4S_NC_1500_Feet.txt'
 filename='20190516_02S_Run 1_nh.txt'
 
 LFAT_df = readcsv(filename,Headers)
