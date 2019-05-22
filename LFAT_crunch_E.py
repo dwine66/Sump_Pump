@@ -72,9 +72,9 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     return()
     
 ### Constants
-f_LFAT = 3
-Headers = ['time (sec)','Slat_4C (1)','Slat_12R (2)', 'Slat_12L (3)','Comments']
-Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_MD (L2)', 'Slat_3_TE (L3)','Comments']
+f_LFAT = 12.5 # in Hertz
+Headers = ['time (sec)','Slat_BR (1)','Slat_BL (2)', 'Slat_AC (3)','Comments']
+#Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_MD (L2)', 'Slat_3_TE (L3)','Comments']
 #Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_TE (L2)', 'Slat_4_C (L3)','Comments']
 
 ### Variables
@@ -82,9 +82,9 @@ T_LFAT = 1/f_LFAT
 
 ### Data Load Code
 #WKdir='S:\\Dave\\QH\\BBP\\LFAT Pump\\Data\\'
-WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2STB Data\\'
+#WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2STB Data\\'
 #WKdir='C:\\Users\\Dave\Google Drive\\'
-#WKdir="U:\\Programs\\Projects\\DSF\\DST\\20190115 LFAT runs\\"
+WKdir="U:\\Programs\\Projects\\DSF\\DST\\LFAT-8L\\2STB\\Test Data\\"
 #WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2L Data\\'
 os.chdir(WKdir)
 
@@ -97,6 +97,7 @@ os.chdir(WKdir)
 #filename='laser 1-3 swap decoupled_nh.txt'
 #filename='20190128_4S_NC_1500_Feet.txt'
 filename='20190516_02S_Run 1_nh.txt'
+filename='20190521 Run C_nh.txt'
 
 LFAT_df = readcsv(filename,Headers)
 print (filename,' read OK')
@@ -114,11 +115,11 @@ gap = 1
 SF = 1
 
 # Test profile times(min)
-T1min = 1/12
-R1min = 1/60
-FSmin = .5
-R2min = 1/60
-T2min = 1/12
+T1min = 1
+R1min = .5
+FSmin = 3
+R2min = .5
+T2min = 1
 
 print ('Measured Sample Rate (Hz): ',int(1/(LFAT_df[t_col][2]-LFAT_df[t_col][1])))
 Sample_Rate = int(1/(LFAT_df[t_col][2]-LFAT_df[t_col][1]))
