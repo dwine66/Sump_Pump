@@ -16,6 +16,11 @@ plt.style.use('ggplot')
 from datetime import datetime, timedelta
 import dateutil
 
+# File Handling
+import socket
+import tkinter as tk
+import tkinter.filedialog
+
 ### Functions
 def readcsv(fname,Header_lst):
     vname = pd.DataFrame(pd.read_csv(fname,na_values='n/a',header=0, names=Header_lst))
@@ -70,8 +75,15 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     plt.xlabel('time (sec.)')
 
     return()
-    
+
+def Get_File():
+    tk.Tk().withdraw() # Close the root window
+    in_path = tk.filedialog.askopenfilename()
+    print (in_path)
+    tk.Tk().destroy()
+    return in_path
 ### Constants
+
 f_LFAT = 4.7 # Hertz
 Headers = ['time (sec)','Slat_B (1)','Baseplate (2)', 'Slat_A (3)','Comments']
 #Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_MD (L2)', 'Slat_3_TE (L3)','Comments']
@@ -80,15 +92,19 @@ Headers = ['time (sec)','Slat_B (1)','Baseplate (2)', 'Slat_A (3)','Comments']
 ### Variables
 T_LFAT = 1/f_LFAT
 
-### Data Load Code
+### Load Datafile
+machine_name = socket.gethostname()
+print ('Machine Detected: '+ machine_name)
 #WKdir='S:\\Dave\\QH\\BBP\\LFAT Pump\\Data\\'
-WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2L Data\\'
-#WKdir='C:\\Users\\Dave\Google Drive\\'
-WKdir="U:\\Programs\\Projects\\DSF\\DST\\LFAT-8L\\2STB\\Test Data\\"
-WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2STB Data\\'
-#WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2L Data\\'
-os.chdir(WKdir)
+if machine_name == "TURTLE":
+    WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2STB Data\\'
+else:
+    #WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2L Data\\'
+    #WKdir='C:\\Users\\Dave\Google Drive\\'
+    WKdir="U:\\Programs\\Projects\\DSF\\DST\\LFAT-8L\\2STB\\Test Data\\"
 
+#WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2L Data\\'
+#os.chdir(WKdir)
 # Read in LFAT pump data
 #filename='20190125_4S_C_1500_NoFeet.txt'
 #filename='motor only chocked_nh.txt'
@@ -96,13 +112,15 @@ os.chdir(WKdir)
 #filename='laser swapped 1 with 2_nh.txt'
 #filename='laser 1-3 swap decoupled_nh.txt'
 #filename='laser 1-3 swap decoupled_nh.txt'
-
 filename='20190516_02S_Run 1_nh.txt'
 filename='20190523 Run B_nh.txt'
 #filename='20190129_12S_Run 5_nh.txt'
 ### File Read
 
-LFAT_df = readcsv(filename,Headers)
+#https://codeyarns.com/2014/02/25/how-to-use-file-open-dialog-to-get-file-path-in-python/
+filepath = Get_File()
+filename = filepath[-21:]
+LFAT_df = readcsv(filepath,Headers)
 print (filename,' read OK')
 
 # Abbreviate Headers
