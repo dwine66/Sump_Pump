@@ -39,11 +39,11 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     print (Title,' Mean:',round(roll_mean,3), 'Range:',roll_range)
     
     plt.figure(filename+'-'+ Title,figsize=(8,10))   
-    plt.suptitle(filename +  '-' + dt + ": "+ str(bc) + " pt rolling statistics" )
+    plt.suptitle(filename +  ' :' + dt + ": "+ str(bc) + " pt rolling statistics" )
     plt.subplots_adjust(hspace=0.35)
 
     plt.subplot(311)
-    plt.title('Absolute data')
+    plt.title(Title)
     plt.plot(BC_df[tb],roll_avg, 'm.',ms=1)
    #plt.plot(BC_df[tb],roll_max, 'k.',ms=1)
     #plt.plot(BC_df[tb],roll_min, 'k.',ms=1)
@@ -72,8 +72,8 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     return()
     
 ### Constants
-f_LFAT = 12.5 # in Hertz
-Headers = ['time (sec)','Slat_BR (1)','Slat_BL (2)', 'Slat_AC (3)','Comments']
+f_LFAT = 4.7 # Hertz
+Headers = ['time (sec)','Slat_B (1)','Baseplate (2)', 'Slat_A (3)','Comments']
 #Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_MD (L2)', 'Slat_3_TE (L3)','Comments']
 #Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_TE (L2)', 'Slat_4_C (L3)','Comments']
 
@@ -82,9 +82,10 @@ T_LFAT = 1/f_LFAT
 
 ### Data Load Code
 #WKdir='S:\\Dave\\QH\\BBP\\LFAT Pump\\Data\\'
-#WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2STB Data\\'
+WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2L Data\\'
 #WKdir='C:\\Users\\Dave\Google Drive\\'
 WKdir="U:\\Programs\\Projects\\DSF\\DST\\LFAT-8L\\2STB\\Test Data\\"
+WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2STB Data\\'
 #WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2L Data\\'
 os.chdir(WKdir)
 
@@ -95,36 +96,43 @@ os.chdir(WKdir)
 #filename='laser swapped 1 with 2_nh.txt'
 #filename='laser 1-3 swap decoupled_nh.txt'
 #filename='laser 1-3 swap decoupled_nh.txt'
-#filename='20190128_4S_NC_1500_Feet.txt'
+
 filename='20190516_02S_Run 1_nh.txt'
-filename='20190521 Run C_nh.txt'
+filename='20190523 Run B_nh.txt'
+#filename='20190129_12S_Run 5_nh.txt'
+### File Read
 
 LFAT_df = readcsv(filename,Headers)
 print (filename,' read OK')
 
+# Abbreviate Headers
 C0 = Headers[0]
 C1 = Headers[1]
 C2 = Headers[2]
 C3 = Headers[3]
 
+# Define some names for Columns
 t_col = C0
 d_col = C2
 
 #Define test regimes
-gap = 1
+gap = 1 # Space between regimes
 SF = 1
 
-# Test profile times(min)
-T1min = 1
-R1min = .5
-FSmin = 3
-R2min = .5
-T2min = 1
+# Test regime times(min)
+T1min = 1 # Tombstone 1
+R1min = 0.5 # Ramp 1
+FSmin = 2.5 # Full Speed
+R2min = 0.5 # Ramp 2
+T2min = 1 # Tombstone 2
 
-print ('Measured Sample Rate (Hz): ',int(1/(LFAT_df[t_col][2]-LFAT_df[t_col][1])))
-Sample_Rate = int(1/(LFAT_df[t_col][2]-LFAT_df[t_col][1]))
-pts_cycle=Sample_Rate/f_LFAT
+Sample_Rate = int(1/(LFAT_df[t_col][2]-LFAT_df[t_col][1])) # Caclulate sample rate of Keyence
+print ('Measured Sample Rate (Hz): ',Sample_Rate)
+
+pts_cycle=Sample_Rate/f_LFAT # Data points per LFAT cycle
 print ('Datapoints per LFAT cycle:',pts_cycle)
+
+# Start and finish data points for each regime
 T1S = 1
 T1F = T1S + int(T1min*60*Sample_Rate*SF)
 R1S = T1F + gap
@@ -137,19 +145,19 @@ T2S = R2F + gap
 T2F = T2S + int(T2min*60*Sample_Rate*SF)
 
 # Need to subtract out absolute reference otherwise indexing goes beyond end of dataframe
-
 T1C=int(T1S+(T1F-T1S)/2)
 FSC=int(FSS+(FSF-FSS)/2)
-T2C=int(T2S+(T2F+T2S)/2)
+T2C=int(T2S+(T2F-T2S)/2)
 print ('Centers:',T1C,FSC,T2C)
 
+# Define a dataframe for each regime
 T1MC_df = LFAT_df[T1S:T1F]
 R1MC_df = LFAT_df[R1S:R1F]
 FSMC_df = LFAT_df[FSS:FSF]
 R2MC_df = LFAT_df[R2S:R2F]
 T2MC_df = LFAT_df[T2S:T2F]
 
-# Create data blocks for each part of run
+# Create data blocks for a specific column (d_col)
 LFAT_SC_df = LFAT_df[[t_col,d_col]]
 
 T1_df = LFAT_SC_df[T1S:T1F]
@@ -158,16 +166,23 @@ FS_df = LFAT_SC_df[FSS:FSF]
 R2_df = LFAT_SC_df[R2S:R2F]
 T2_df = LFAT_SC_df[T2S:T2F]
 
-# Create two-cycle short-term blocks  at center of each part
+# Create two-cycle short-term blocks at center of each part
 T1C_df = T1_df[int((T1S-T1C)-(Sample_Rate/f_LFAT)):int((T1S-T1C)+(Sample_Rate/f_LFAT))]
 FSC_df = FS_df[int((FSC-FSS)-(Sample_Rate/f_LFAT)):int((FSC-FSS)+(Sample_Rate/f_LFAT))]
 T2C_df = T2_df[int((T2S-T2C)-(Sample_Rate/f_LFAT)):int((T2S-T2C)+(Sample_Rate/f_LFAT))]
 
+# Create dataframes for short-term differential data
+# This throws a warning - fix (use .loc)
 Ncyc = 5 # Number of cycles to display
 FS_3C_df = LFAT_df[FSC-Ncyc*int(Sample_Rate/f_LFAT):FSC+Ncyc*int(Sample_Rate/f_LFAT)]
-FS_3C_df['diff12']= FS_3C_df[C1]-FS_3C_df[C2]
-FS_3C_df['diff13']= FS_3C_df[C1]-FS_3C_df[C3]
-FS_3C_df['diff23']= FS_3C_df[C2]-FS_3C_df[C3]
+
+diff12 = C1+'-'+C2
+diff13 = C1+'-'+C3
+diff23 = C2+'-'+C3
+
+FS_3C_df[diff12]= FS_3C_df[C1]-FS_3C_df[C2]
+FS_3C_df[diff13]= FS_3C_df[C1]-FS_3C_df[C3]
+FS_3C_df[diff23]= FS_3C_df[C2]-FS_3C_df[C3]
 
 #FS_3C_C1m = FS_3C_df[C1].mean()
 #FS_3C_C2m = FS_3C_df[C2].mean()
@@ -201,31 +216,32 @@ plt.xlabel('time (sec.)')
 plt.ylabel('disp (mm)')
 plt.show()
 
+### ST Absolute Plots
+boxcar(100,FS_3C_df,C0,C1,'Boxcar - Absolute ST ' + C1)
+boxcar(100,FS_3C_df,C0,C2,'Boxcar - Absolute ST ' + C2)
+boxcar(100,FS_3C_df,C0,C3,'Boxcar - Absolute ST ' + C3)
+
 ### Differentials
-
-boxcar(100,FS_3C_df,C0,C1,'Boxcar - ' + C1)
-boxcar(100,FS_3C_df,C0,C2,'Boxcar - ' + C2)
-boxcar(100,FS_3C_df,C0,C3,'Boxcar - ' + C3)
-
-boxcar(100,FS_3C_df,C0,'diff12','Boxcar - diff12')
-boxcar(100,FS_3C_df,C0,'diff13','Boxcar - diff13')
-boxcar(100,FS_3C_df,C0,'diff23','Boxcar - diff23')
+boxcar(100,FS_3C_df,C0, diff12,'Boxcar - ST diff12')
+boxcar(100,FS_3C_df,C0, diff13,'Boxcar - ST diff13')
+boxcar(100,FS_3C_df,C0, diff23,'Boxcar - ST diff23')
 
 #boxcar(100,FS_3C_df,C0,'mdiff12','Boxcar - mdiff12')
 #boxcar(100,FS_3C_df,C0,'mdiff13','Boxcar - mdiff13')
 #boxcar(100,FS_3C_df,C0,'mdiff23','Boxcar - mdiff23')
 
-# Single-channel stats
+### Single-channel stats
 # Full run
-boxcar(100,LFAT_df,C0,C1,C1+' Boxcar - full run')
-boxcar(100,LFAT_df,C0,C2,C2+' Boxcar - full run')
-boxcar(100,LFAT_df,C0,C3,C3+' Boxcar - full run')
-# Full speed
-boxcar(100,FSMC_df,C0,C1,C1+'Baseplate Boxcar')
-boxcar(100,FSMC_df,C0,C2,C2+'Slat 1A Boxcar')
-boxcar(100,FSMC_df,C0,C3,C3+'Slat 1B Boxcar')
+boxcar(100,LFAT_df,C0,C1,C1 +' Boxcar - full run')
+boxcar(100,LFAT_df,C0,C2,C2 +' Boxcar - full run')
+boxcar(100,LFAT_df,C0,C3,C3 +' Boxcar - full run')
 
-# Full Run
+# Full speed - entire regime
+boxcar(100,FSMC_df,C0,C1,C1+' Boxcar - Full Speed')
+boxcar(100,FSMC_df,C0,C2,C2+' Boxcar - Full Speed')
+boxcar(100,FSMC_df,C0,C3,C3+' Boxcar - Full Speed')
+
+# Full Run for selected column
 plt.figure(1,figsize=(9,3))
 plt.scatter(LFAT_df[t_col],LFAT_df[d_col],s=1,c='r')
 plt.title(filename +  ' ' + d_col + ': full run')
@@ -241,7 +257,7 @@ plt.xlabel('time (sec.)')
 plt.ylabel('disp (mm)')
 plt.show()
 
-#Ramps and Tombstones
+# Ramps and Tombstones
 plt.figure(3,figsize=(9,6))
 plt.suptitle(filename + ' ' + d_col + ': ramps and tombstones')
 plt.subplots_adjust(hspace=0.25)
@@ -329,27 +345,34 @@ ax.set_ylabel('PSD (dB)')
 fig.show()
 
 ### 2-channel comparisons
-Ca = C1
-Cb = C2
+Ca = C2
+Cb = C3
 
 FS_2C_df = LFAT_df[[t_col,Ca,Cb]]
 FS_2C_df['diff']= FS_2C_df[Ca]-FS_2C_df[Cb]
 
-plt.figure('2-channel comparisions',figsize=(9,9))
+plt.figure('2-channel comparision',figsize=(9,10))
 plt.suptitle(filename +  ': ' + Ca+'-'+Cb + " displacement delta" )
+plt.subplots_adjust(hspace=0.35,wspace=0.25)
+
 plt.subplot(411)
+plt.title(Ca,fontsize=10)
 plt.plot(FS_2C_df[t_col],FS_2C_df[Ca], 'r.',ms=1)
 
 plt.subplot(412)
+plt.title(Cb,fontsize=10)
 plt.plot(FS_2C_df[t_col],FS_2C_df[Cb], 'b.',ms=1)
 
 plt.subplot(413)
+plt.title(Ca+' - '+Cb,fontsize=10)
 plt.plot(FS_2C_df[t_col],FS_2C_df['diff'], 'm.',ms=1)
 plt.show()
 
 plt.subplot(414)
+plt.title('Overlay',fontsize=10)
 plt.plot(FS_2C_df[t_col],FS_2C_df[Ca], 'r.',ms=1)
 plt.plot(FS_2C_df[t_col],FS_2C_df[Cb], 'b.',ms=1)
+#plt.tight_layout(pad=1.0,h_pad=1.0)
 plt.show()
 
 ### 3-channel comparisons
@@ -375,27 +398,25 @@ a3.plot(FS_3C_df[t_col],FS_3C_df[C3], 'g.',ms=1)
 a3.set_title(C3)
 
 a4 = plt.subplot(334)
-a4.plot(FS_3C_df[t_col],FS_3C_df['diff12'], 'm.',ms=1)
+a4.plot(FS_3C_df[t_col],FS_3C_df[diff12], 'm.',ms=1)
 a4.set_title('1-2')
 
 a5 = plt.subplot(337)
-a5.plot(FS_3C_df[t_col],FS_3C_df['diff13'], '.',color='brown',ms=1)
+a5.plot(FS_3C_df[t_col],FS_3C_df[diff13], '.',color='brown',ms=1)
 a5.set_title('1-3')
 
 a6 = plt.subplot(338)
-a6.plot(FS_3C_df[t_col],FS_3C_df['diff23'], 'y.',ms=1)
+a6.plot(FS_3C_df[t_col],FS_3C_df[diff23], 'y.',ms=1)
 a6.set_title('2-3')
 
 Cfig.show()
-
-
 
 # All 3 on one axis w/bc averaging and time shift
 bc2 = 10
 All_r = LFAT_df.rolling(bc2).mean()
 All_r['v_shift'] = All_r[C1].shift(80)
 All_r['diff'] = All_r['v_shift']-All_r[C2]
-plt.figure('Raw Data - all 3 on one axis',figsize=(9,6))
+plt.figure('Raw Data 10pt Boxcar - all 3 on one axis',figsize=(9,6))
 plt.scatter(All_r[t_col],All_r[C1],s=1,c='r')
 plt.plot(All_r[t_col],All_r['v_shift'],'r-')
 plt.scatter(All_r[t_col],All_r[C2],s=1,c='b')
