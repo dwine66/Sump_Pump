@@ -84,8 +84,8 @@ def Get_File():
     return in_path
 ### Constants
 
-f_LFAT = 4.7 # Hertz
-Headers = ['time (sec)','Slat_B (1)','Baseplate (2)', 'Slat_A (3)','Comments']
+f_LFAT = 12.67 # Hertz
+Headers = ['time (sec)','Slat_A_Endchop/1000 (L1)','Slat_B (L2)', 'Slat_A (L3)','Comments']
 #Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_MD (L2)', 'Slat_3_TE (L3)','Comments']
 #Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_TE (L2)', 'Slat_4_C (L3)','Comments']
 
@@ -168,6 +168,9 @@ FSC=int(FSS+(FSF-FSS)/2)
 T2C=int(T2S+(T2F-T2S)/2)
 print ('Centers:',T1C,FSC,T2C)
 
+#Scale End
+LFAT_df[C1]=LFAT_df[C1]/1000
+
 # Define a dataframe for each regime
 T1MC_df = LFAT_df[T1S:T1F]
 R1MC_df = LFAT_df[R1S:R1F]
@@ -215,21 +218,21 @@ FS_3C_df[diff23]= FS_3C_df[C2]-FS_3C_df[C3]
 # Raw Data
 plt.figure('Raw Data',figsize=(9,9))
 plt.suptitle(filename + ': Raw Data')
-plt.subplots_adjust(hspace = .25)
+plt.subplots_adjust(hspace = .35)
 
 plt.subplot(311)
 plt.scatter(LFAT_df[t_col],LFAT_df[C1],s=1,c='r')
-plt.title(filename +  ' ' + C1 + ': full run')
+plt.title(filename +  ' ' + C1 + ': full run', fontsize=10)
 plt.ylabel('disp (mm)')
 
 plt.subplot(312)
-plt.scatter(LFAT_df[t_col],LFAT_df[C2],s=1,c='r')
-plt.title(filename +  ' ' + C2 + ': full run')
+plt.scatter(LFAT_df[t_col],LFAT_df[C2],s=1,c='b')
+plt.title(filename +  ' ' + C2 + ': full run', fontsize=10)
 plt.ylabel('disp (mm)')
 
 plt.subplot(313)
-plt.scatter(LFAT_df[t_col],LFAT_df[C3],s=1,c='r')
-plt.title(filename +  ' ' + C3 + ': full run')
+plt.scatter(LFAT_df[t_col],LFAT_df[C3],s=1,c='g')
+plt.title(filename +  ' ' + C3 + ': full run', fontsize=10)
 plt.xlabel('time (sec.)')
 plt.ylabel('disp (mm)')
 plt.show()
@@ -259,63 +262,68 @@ boxcar(100,FSMC_df,C0,C1,C1+' Boxcar - Full Speed')
 boxcar(100,FSMC_df,C0,C2,C2+' Boxcar - Full Speed')
 boxcar(100,FSMC_df,C0,C3,C3+' Boxcar - Full Speed')
 
+### Selected column stats
 # Full Run for selected column
-plt.figure(1,figsize=(9,3))
-plt.scatter(LFAT_df[t_col],LFAT_df[d_col],s=1,c='r')
+plt.figure(d_col+': Full Run',figsize=(6,4))
+plt.scatter(LFAT_df[t_col],LFAT_df[d_col],s=1,c='m')
 plt.title(filename +  ' ' + d_col + ': full run')
 plt.xlabel('time (sec.)')
 plt.ylabel('disp (mm)')
 plt.show()
 
 # Full Speed Only
-plt.figure(2,figsize=(6,4))
-plt.scatter(FS_df[t_col],FS_df[d_col],s=1,c='b')
+plt.figure(d_col+': Full Speed Only',figsize=(6,4))
+plt.scatter(FS_df[t_col],FS_df[d_col],s=1,c='m')
 plt.title(filename +  ' ' + d_col + ': full speed')
 plt.xlabel('time (sec.)')
 plt.ylabel('disp (mm)')
 plt.show()
 
 # Ramps and Tombstones
-plt.figure(3,figsize=(9,6))
+plt.figure(d_col+': Ramps and Tombstones',figsize=(9,6))
 plt.suptitle(filename + ' ' + d_col + ': ramps and tombstones')
-plt.subplots_adjust(hspace=0.25)
+plt.subplots_adjust(hspace=0.35)
 
 plt.subplot(221)
-plt.scatter(T1_df[t_col],T1_df[d_col],s=1,c='y')
-plt.title('Tombstone 1')
+plt.scatter(T1_df[t_col],T1_df[d_col],s=1,c='c')
+plt.title('Tombstone 1',fontsize=10)
+plt.ylabel('disp (mm)')
 
 plt.subplot(222)
-plt.scatter(R1_df[t_col],R1_df[d_col],s=1,c='g')
-plt.title('Ramp 1')
+plt.scatter(R1_df[t_col],R1_df[d_col],s=1,c='y')
+plt.title('Ramp 1 (up)',fontsize=10)
 
 plt.subplot(223)
-plt.scatter(T2_df[t_col],T2_df[d_col],s=1,c='y')
-plt.title('Tombstone 2')
+plt.scatter(R2_df[t_col],R2_df[d_col],s=1,c='y')
+plt.title('Ramp 2 (down)',fontsize=10)
+plt.xlabel('time (sec.)')
+plt.ylabel('disp (mm)')
 
 plt.subplot(224)
-plt.scatter(R2_df[t_col],R2_df[d_col],s=1,c='g')
-plt.title('Ramp 2')
+plt.scatter(T2_df[t_col],T2_df[d_col],s=1,c='c')
+plt.title('Tombstone 2',fontsize=10)
+plt.xlabel('time (sec.)')
+
 plt.show()
 
 # Short-term noise plots
-plt.figure('Short-Term Noise',figsize=(8,10))
+plt.figure(d_col+': Short-Term Noise',figsize=(9,6))
 plt.suptitle(filename +  ' ' + d_col + ': short-term noise')
+plt.subplots_adjust(hspace=0.35)
 
 plt.subplot(311)
-plt.scatter(T1C_df[t_col],T1C_df[d_col],s=1,c='y')
-plt.title('Tombstone 1')
-plt.xlabel('time (sec.)')
+plt.scatter(T1C_df[t_col],T1C_df[d_col],s=1,c='c')
+plt.title('Tombstone 1',fontsize=10)
 plt.ylabel('disp (mm)')
 
 plt.subplot(312)
-plt.scatter(FSC_df[t_col],FSC_df[d_col],s=1,c='b')
-plt.title('Full Speed')
-plt.xlabel('time (sec.)')
+plt.scatter(FSC_df[t_col],FSC_df[d_col],s=1,c='m')
+plt.title('Full Speed',fontsize=10)
 plt.ylabel('disp (mm)')
 
 plt.subplot(313)
-plt.scatter(T2C_df[t_col],T2C_df[d_col],s=1,c='y')
-plt.title('Tombstone 2')
+plt.scatter(T2C_df[t_col],T2C_df[d_col],s=1,c='c')
+plt.title('Tombstone 2',fontsize=10)
 plt.xlabel('time (sec.)')
 plt.ylabel('disp (mm)')
 
@@ -354,23 +362,24 @@ disp_psd = np.abs(disp_fft)**2
 
 fftfreq = sp.fftpack.fftfreq(len(disp_psd),1/Sample_Rate)
 i = fftfreq > 0
-fig, ax = plt.subplots(1, 1, figsize=(8, 4))
+fig, ax = plt.subplots(1, 1, figsize=(9, 6))
 fig.suptitle(filename + ' '+ d_col + ' ' + t_R1+' to '+t_R2 + ' sec: FFT' )
 ax.plot(fftfreq[i], 10 * np.log10(disp_psd[i]))
-ax.set_xlim(0, 100)
+ax.set_xlim(0, 10*f_LFAT)
+ax.set_xticks(np.arange(0, 10*f_LFAT, step=f_LFAT))
 ax.set_xlabel('Frequency (Hz)')
 ax.set_ylabel('PSD (dB)')
 fig.show()
 
 ### 2-channel comparisons
-Ca = C2
-Cb = C3
+Ca = C1
+Cb = C2
 
-FS_2C_df = LFAT_df[[t_col,Ca,Cb]]
+FS_2C_df = FSMC_df[[t_col,Ca,Cb]]
 FS_2C_df['diff']= FS_2C_df[Ca]-FS_2C_df[Cb]
 
-plt.figure('2-channel comparision',figsize=(9,10))
-plt.suptitle(filename +  ': ' + Ca+'-'+Cb + " displacement delta" )
+plt.figure('2-channel comparison',figsize=(9,10))
+plt.suptitle(filename +  ': ' + Ca+'-'+Cb + " Overlay" )
 plt.subplots_adjust(hspace=0.35,wspace=0.25)
 
 plt.subplot(411)
@@ -429,16 +438,21 @@ a6.set_title('2-3')
 
 Cfig.show()
 
-# All 3 on one axis w/bc averaging and time shift
+### Boxcar w/timeshift
 bc2 = 10
-All_r = LFAT_df.rolling(bc2).mean()
-All_r['v_shift'] = All_r[C1].shift(80)
-All_r['diff'] = All_r['v_shift']-All_r[C2]
+data_shift=80
+C_shift=C1
+C_diff=C2
+All_r = FS_3C_df.rolling(bc2).mean()
+# Shift C1 by data_shift points
+All_r['v_shift'] = All_r[C_shift].shift(data_shift)
+# Subtract C2 from it
+All_r['diff'] = All_r['v_shift']-All_r[C_diff]
 plt.figure('Raw Data 10pt Boxcar - all 3 on one axis',figsize=(9,6))
 plt.scatter(All_r[t_col],All_r[C1],s=1,c='r')
-plt.plot(All_r[t_col],All_r['v_shift'],'r-')
+plt.plot(All_r[t_col],All_r['v_shift'],'r',marker=None)
 plt.scatter(All_r[t_col],All_r[C2],s=1,c='b')
-plt.scatter(All_r[t_col],All_r[C3],s=1,c='c')
+plt.scatter(All_r[t_col],All_r[C3],s=1,c='g')
 
 plt.scatter(All_r[t_col],All_r['diff'],s=1,c='m')
 
