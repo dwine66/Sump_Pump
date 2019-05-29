@@ -84,7 +84,7 @@ def Get_File():
     return in_path
 ### Constants
 
-f_LFAT = 12.67 # Hertz
+f_LFAT = 25.17 # Hertz
 Headers = ['time (sec)','Slat_A_Endchop/1000 (L1)','Slat_B (L2)', 'Slat_A (L3)','Comments']
 #Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_MD (L2)', 'Slat_3_TE (L3)','Comments']
 #Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_TE (L2)', 'Slat_4_C (L3)','Comments']
@@ -131,7 +131,7 @@ C3 = Headers[3]
 
 # Define some names for Columns
 t_col = C0
-d_col = C2
+d_col = C3
 
 #Define test regimes
 gap = 1 # Space between regimes
@@ -140,7 +140,7 @@ SF = 1
 # Test regime times(min)
 T1min = 1 # Tombstone 1
 R1min = 0.5 # Ramp 1
-FSmin = 2.5 # Full Speed
+FSmin = 3.5 # Full Speed
 R2min = 0.5 # Ramp 2
 T2min = 1 # Tombstone 2
 
@@ -194,7 +194,7 @@ T2C_df = T2_df[int((T2S-T2C)-(Sample_Rate/f_LFAT)):int((T2S-T2C)+(Sample_Rate/f_
 
 # Create dataframes for short-term differential data
 # This throws a warning - fix (use .loc)
-Ncyc = 5 # Number of cycles to display
+Ncyc = 5 # Number of cycles to display on either side of center point of run
 FS_3C_df = LFAT_df[FSC-Ncyc*int(Sample_Rate/f_LFAT):FSC+Ncyc*int(Sample_Rate/f_LFAT)]
 
 diff12 = C1+'-'+C2
@@ -212,7 +212,6 @@ FS_3C_df[diff23]= FS_3C_df[C2]-FS_3C_df[C3]
 #FS_3C_df['mdiff12']= (FS_3C_df[C1]-FS_3C_C1m) - (FS_3C_df[C2]-FS_3C_C2m)
 #FS_3C_df['mdiff13']= (FS_3C_df[C1]-FS_3C_C1m) - (FS_3C_df[C1]-FS_3C_C3m)
 #FS_3C_df['mdiff23']= (FS_3C_df[C2]-FS_3C_C2m) - (FS_3C_df[C2]-FS_3C_C3m)
-
 
 ### Basic Plots
 # Raw Data
@@ -307,8 +306,8 @@ plt.xlabel('time (sec.)')
 plt.show()
 
 # Short-term noise plots
-plt.figure(d_col+': Short-Term Noise',figsize=(9,6))
-plt.suptitle(filename +  ' ' + d_col + ': short-term noise')
+plt.figure(d_col+'- Short-Term Noise',figsize=(9,6))
+plt.suptitle(filename +  ' ' + d_col + '- short-term noise')
 plt.subplots_adjust(hspace=0.35)
 
 plt.subplot(311)
@@ -372,14 +371,14 @@ ax.set_ylabel('PSD (dB)')
 fig.show()
 
 ### 2-channel comparisons
-Ca = C1
-Cb = C2
+Ca = C2
+Cb = C3
 
 FS_2C_df = FSMC_df[[t_col,Ca,Cb]]
 FS_2C_df['diff']= FS_2C_df[Ca]-FS_2C_df[Cb]
 
 plt.figure('2-channel comparison',figsize=(9,10))
-plt.suptitle(filename +  ': ' + Ca+'-'+Cb + " Overlay" )
+plt.suptitle(filename + ' ' + Ca+'-'+Cb + " Overlay" )
 plt.subplots_adjust(hspace=0.35,wspace=0.25)
 
 plt.subplot(411)
@@ -409,7 +408,7 @@ xh = FSC_df[C0].iloc[-1]
 Cfig = plt.figure(8,figsize=(11,8))
 #Cfig.subplots(sharex=True)
 #Cfig.xlim = ([xl,xh])
-Cfig.suptitle(filename +  ': displacement deltas' )
+Cfig.suptitle(filename +  '- displacement deltas' )
 Cfig.subplots_adjust(hspace=0.35,wspace=0.25)
 
 a1 = plt.subplot(331)
