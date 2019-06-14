@@ -82,9 +82,8 @@ def Get_File():
     print (in_path)
     tk.Tk().destroy()
     return in_path
+
 ### Constants
-
-
 #Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_MD (L2)', 'Slat_3_TE (L3)','Comments']
 #Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_TE (L2)', 'Slat_4_C (L3)','Comments']
 
@@ -339,7 +338,7 @@ plt.show()
 
 # Ramps and Tombstones
 plt.figure(d_col+': Ramps and Tombstones',figsize=(9,6))
-plt.suptitle(filename + ' ' + d_col + ': ramps and tombstones')
+plt.suptitle(filename + ' ' + d_col + ': ramps and tombstones (no boxcar)')
 plt.subplots_adjust(hspace=0.35)
 
 plt.subplot(221)
@@ -366,7 +365,7 @@ plt.show()
 
 # Short-term noise plots
 plt.figure(d_col+'- Short-Term Noise',figsize=(9,6))
-plt.suptitle(filename +  ' ' + d_col + '- short-term noise')
+plt.suptitle(filename +  ' ' + d_col + '- short-term noise (no averaging)',fontsize=12)
 plt.subplots_adjust(hspace=0.35)
 
 plt.subplot(311)
@@ -406,7 +405,6 @@ print('T2 mean, 1s, range for channel',d_col,': ', T2_m, T2_s,T2_r)
 
 ### FFT Analysis
 # https://ipython-books.github.io/101-analyzing-the-frequency-components-of-a-signal-with-a-fast-fourier-transform/
-
 FFT_tb = FS_df
 t_R1 = str(FFT_tb[C0].iloc[0])
 t_R2 = str(FFT_tb[C0].iloc[-1])
@@ -421,7 +419,6 @@ disp_psd = np.abs(disp_fft)**2
 fftfreq = sp.fftpack.fftfreq(len(disp_psd),1/Sample_Rate)
 i = fftfreq > 0
 fig, ax = plt.subplots(1, 1, figsize=(9, 6))
-fig.title('FFT of Full Speed data')
 fig.suptitle(filename + ' '+ d_col + ' ' + t_R1+' to '+t_R2 + ' sec: FFT' )
 ax.plot(fftfreq[i], 10 * np.log10(disp_psd[i]))
 ax.set_xlim(0, 10*f_LFAT)
