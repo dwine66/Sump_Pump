@@ -39,6 +39,7 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     roll_min = BC_df[dt].rolling(bc).min()
     
     roll_range = round((roll_max-roll_min).mean(),3)
+    # roll_mean is the average of the means of each boxcar window
     roll_mean = roll_avg.mean()
     
     print (Title,' Mean:',round(roll_mean,3), 'Range:',roll_range)
@@ -66,11 +67,11 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     plt.show()
     
     plt.subplot(313)
-    plt.title('1s and Range: '+str(roll_range))
     plt.plot(BC_df[tb],roll_std, 'm.',ms=1)
-    #plt.plot(BC_df[tb],roll_range, 'k.',ms=1)
-    plt.ylim([0,0.6])
-    plt.title('st. dev')
+    plt.plot(BC_df[tb],roll_max, 'w.',ms=1)
+    plt.plot(BC_df[tb],roll_min, 'w.',ms=1)
+    #plt.ylim([0,0.6])
+    plt.title('1s: ')
     plt.ylabel('disp (mm)')
     plt.xlabel('time (sec.)')
 
@@ -85,9 +86,6 @@ def Get_File():
 ### Constants
 
 
-#Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_MD (L2)', 'Slat_3_TE (L3)','Comments']
-#Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_TE (L2)', 'Slat_4_C (L3)','Comments']
-
 ### Variables
   
 ### Load Datafile
@@ -101,18 +99,6 @@ else:
     #WKdir='C:\\Users\\Dave\Google Drive\\'
     WKdir="U:\\Programs\\Projects\\DSF\\DST\\LFAT-8L\\2STB\\Test Data\\"
 
-#WKdir='C:\\Users\\Dave\\Desktop\\LFAT-2L Data\\'
-#os.chdir(WKdir)
-# Read in LFAT pump data
-#filename='20190125_4S_C_1500_NoFeet.txt'
-#filename='motor only chocked_nh.txt'
-#filename='1Khz lasers only_nh.txt'
-#filename='laser swapped 1 with 2_nh.txt'
-#filename='laser 1-3 swap decoupled_nh.txt'
-#filename='laser 1-3 swap decoupled_nh.txt'
-filename='20190516_02S_Run 1_nh.txt'
-filename='20190523 Run B_nh.txt'
-#filename='20190129_12S_Run 5_nh.txt'
 ### File Read
 
 #https://codeyarns.com/2014/02/25/how-to-use-file-open-dialog-to-get-file-path-in-python/
@@ -132,16 +118,16 @@ for i, line in enumerate(fp):
 fp.close()
 
 # Parse Headers
-Run_Name = Header_Line[0][5:]
-Date = Header_Line[1][6:]
-Machine_Name = Header_Line[2][9:]
-Test_Type = Header_Line[3][9:]
-RPM = float(Header_Line[4][10:])
-Test_Duration = float(Header_Line[5][35:])
+Run_Name = Header_Line[0][4:]
+Date = Header_Line[1][5:]
+Machine_Name = Header_Line[2][8:]
+Test_Type = Header_Line[3][10:]
+RPM = float(Header_Line[4][9:])
+Test_Duration = float(Header_Line[5][34:])
 Laser_1_lst=Header_Line[7].split(',')
 Laser_2_lst=Header_Line[8].split(',')
 Laser_3_lst=Header_Line[9].split(',') 
-Notes = Header_Line[10][7:]
+Notes = Header_Line[10][6:]
 
 # Load up variables
 L1_x = Laser_1_lst[2]
@@ -160,13 +146,13 @@ else:
 
 L2_SF = Laser_2_lst[4]
 if L2_SF.isdigit():
-    L2_SF=float(L1_SF)
+    L2_SF=float(L2_SF)
 else:
     L2_SF=1.0
 
 L3_SF = Laser_3_lst[4]
 if L3_SF.isdigit():
-    L3_SF=float(L1_SF)
+    L3_SF=float(L3_SF)
 else:
     L3_SF=1.0
 
@@ -316,9 +302,9 @@ boxcar(100,LFAT_df,C0,C2,C2 +' Boxcar - full run')
 boxcar(100,LFAT_df,C0,C3,C3 +' Boxcar - full run')
 
 # Full speed - entire regime
-boxcar(100,FSMC_df,C0,C1,C1+' Boxcar - Full Speed')
-boxcar(100,FSMC_df,C0,C2,C2+' Boxcar - Full Speed')
-boxcar(100,FSMC_df,C0,C3,C3+' Boxcar - Full Speed')
+boxcar(100,FSMC_df,C0,C1,C1+' Boxcar - Full Speed Region')
+boxcar(100,FSMC_df,C0,C2,C2+' Boxcar - Full Speed Region')
+boxcar(100,FSMC_df,C0,C3,C3+' Boxcar - Full Speed Region')
 
 ### Selected column stats
 # Full Run for selected column
@@ -421,7 +407,6 @@ disp_psd = np.abs(disp_fft)**2
 fftfreq = sp.fftpack.fftfreq(len(disp_psd),1/Sample_Rate)
 i = fftfreq > 0
 fig, ax = plt.subplots(1, 1, figsize=(9, 6))
-fig.title('FFT of Full Speed data')
 fig.suptitle(filename + ' '+ d_col + ' ' + t_R1+' to '+t_R2 + ' sec: FFT' )
 ax.plot(fftfreq[i], 10 * np.log10(disp_psd[i]))
 ax.set_xlim(0, 10*f_LFAT)
