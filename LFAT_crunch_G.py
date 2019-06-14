@@ -38,18 +38,20 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     roll_max = BC_df[dt].rolling(bc).max()
     roll_min = BC_df[dt].rolling(bc).min()
     
-    roll_range = round((roll_max-roll_min).mean(),3)
     # roll_mean is the average of the means of each boxcar window
-    roll_mean = roll_avg.mean()
+    # This is the best estimate of the z height at that time point
+    roll_mean = round(roll_avg.mean(),3)
+    roll_1s = round(roll_avg.std(),3)
+    roll_range = round(roll_avg.max()-roll_avg.min(),3)
     
-    print (Title,' Mean:',round(roll_mean,3), 'Range:',roll_range)
+    print (Title,' Mean:',roll_mean, '1s',roll_1s, 'Range:',roll_range)
     
-    plt.figure(filename+'-'+ Title,figsize=(8,10))   
-    plt.suptitle(filename +  ' :' + dt + ": "+ str(bc) + " pt rolling statistics" )
+    plt.figure(filename+'-'+ Title ,figsize=(8,10))   
+    plt.suptitle(filename +  ' :' + dt + ": "+ str(bc) + " pt boxcar "+ str(f_LFAT)+' Hz',fontsize=12 )
     plt.subplots_adjust(hspace=0.35)
 
-    plt.subplot(311)
-    plt.title(Title)
+    plt.subplot(211)
+    plt.title(Title+' Mean: '+str(roll_mean), fontsize=12)
     plt.plot(BC_df[tb],roll_avg, 'm.',ms=1)
    #plt.plot(BC_df[tb],roll_max, 'k.',ms=1)
     #plt.plot(BC_df[tb],roll_min, 'k.',ms=1)
@@ -57,23 +59,25 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     #plt.xlabel('time (sec.)')
     plt.ylabel('disp (mm)')
 
-    plt.subplot(312)
-    plt.title('Stability around mean')
+    plt.subplot(212)
+    plt.title('Stability around Mean- '+ '1s: '+str(roll_1s)+' Range: '+str(roll_range), fontsize = 12)
     plt.plot(BC_df[tb],roll_avg-roll_mean, 'm.',ms=2)
 #    plt.errorbar(BC_df[tb],roll_avg-roll_mean,yerr=roll_std,'m.',ms=2)
+    plt.plot(BC_df[tb],roll_max, 'w.',ms=1)
+    plt.plot(BC_df[tb],roll_min, 'w.',ms=1)
     plt.ylim([-0.6,0.6])
     #plt.xlabel('time (sec.)')
     plt.ylabel('disp (mm)')
     plt.show()
     
-    plt.subplot(313)
-    plt.plot(BC_df[tb],roll_std, 'm.',ms=1)
-    plt.plot(BC_df[tb],roll_max, 'w.',ms=1)
-    plt.plot(BC_df[tb],roll_min, 'w.',ms=1)
-    #plt.ylim([0,0.6])
-    plt.title('1s: ')
-    plt.ylabel('disp (mm)')
-    plt.xlabel('time (sec.)')
+#    plt.subplot(313)
+#    plt.plot(BC_df[tb],roll_std, 'm.',ms=1)
+#    plt.plot(BC_df[tb],roll_max, 'w.',ms=1)
+#    plt.plot(BC_df[tb],roll_min, 'w.',ms=1)
+#    #plt.ylim([0,0.6])
+#    plt.title('1s: ')
+#    plt.ylabel('disp (mm)')
+#    plt.xlabel('time (sec.)')
 
     return()
 
@@ -84,13 +88,11 @@ def Get_File():
     tk.Tk().destroy()
     return in_path
 
-<<<<<<< HEAD
-=======
 ### Constants
 #Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_MD (L2)', 'Slat_3_TE (L3)','Comments']
 #Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_TE (L2)', 'Slat_4_C (L3)','Comments']
 
->>>>>>> ef923bc1497a5bf663a2d465ec76cf1318915ff3
+
 ### Variables
   
 ### Load Datafile
@@ -128,7 +130,7 @@ Date = Header_Line[1][5:]
 Machine_Name = Header_Line[2][8:]
 Test_Type = Header_Line[3][10:]
 RPM = float(Header_Line[4][9:])
-Test_Duration = float(Header_Line[5][34:])
+FS_Duration = float(Header_Line[5][34:])
 Laser_1_lst=Header_Line[7].split(',')
 Laser_2_lst=Header_Line[8].split(',')
 Laser_3_lst=Header_Line[9].split(',') 
@@ -188,7 +190,7 @@ SF = 1
 # Test regime times(min)
 T1min = 1 # Tombstone 1
 R1min = 0.5 # Ramp 1
-FSmin = 3.5 # Full Speed
+FSmin = FS_Duration # Full Speed
 R2min = 0.5 # Ramp 2
 T2min = 1 # Tombstone 2
 
@@ -397,27 +399,28 @@ print('T2 mean, 1s, range for channel',d_col,': ', T2_m, T2_s,T2_r)
 
 ### FFT Analysis
 # https://ipython-books.github.io/101-analyzing-the-frequency-components-of-a-signal-with-a-fast-fourier-transform/
-FFT_tb = FS_df
-t_R1 = str(FFT_tb[C0].iloc[0])
-t_R2 = str(FFT_tb[C0].iloc[-1])
-FFT_C = FSC-FSS
-FSC2_df = FFT_tb[int(FFT_C-(10*Sample_Rate/f_LFAT)):int(10*FFT_C+(Sample_Rate/f_LFAT))]
-
-time = pd.to_numeric(FSC2_df[t_col])
-Disp = pd.to_numeric(FSC2_df[d_col])
-disp_fft = sp.fftpack.fft(Disp)
-disp_psd = np.abs(disp_fft)**2
-
-fftfreq = sp.fftpack.fftfreq(len(disp_psd),1/Sample_Rate)
-i = fftfreq > 0
-fig, ax = plt.subplots(1, 1, figsize=(9, 6))
-fig.suptitle(filename + ' '+ d_col + ' ' + t_R1+' to '+t_R2 + ' sec: FFT' )
-ax.plot(fftfreq[i], 10 * np.log10(disp_psd[i]))
-ax.set_xlim(0, 10*f_LFAT)
-ax.set_xticks(np.arange(0, 10*f_LFAT, step=f_LFAT))
-ax.set_xlabel('Frequency (Hz)')
-ax.set_ylabel('PSD (dB)')
-fig.show()
+#print ('Starting FFT analysis')
+#FFT_tb = FS_df
+#t_R1 = str(FFT_tb[C0].iloc[0])
+#t_R2 = str(FFT_tb[C0].iloc[-1])
+#FFT_C = FSC-FSS
+#FSC2_df = FFT_tb[int(FFT_C-(10*Sample_Rate/f_LFAT)):int(10*FFT_C+(Sample_Rate/f_LFAT))]
+#
+#time = pd.to_numeric(FSC2_df[t_col])
+#Disp = pd.to_numeric(FSC2_df[d_col])
+#disp_fft = sp.fftpack.fft(Disp)
+#disp_psd = np.abs(disp_fft)**2
+#
+#fftfreq = sp.fftpack.fftfreq(len(disp_psd),1/Sample_Rate)
+#i = fftfreq > 0
+#fig, ax = plt.subplots(1, 1, figsize=(9, 6))
+#fig.suptitle(filename + ' '+ d_col + ' ' + t_R1+' to '+t_R2 + ' sec: FFT' )
+#ax.plot(fftfreq[i], 10 * np.log10(disp_psd[i]))
+#ax.set_xlim(0, 10*f_LFAT)
+#ax.set_xticks(np.arange(0, 10*f_LFAT, step=f_LFAT))
+#ax.set_xlabel('Frequency (Hz)')
+#ax.set_ylabel('PSD (dB)')
+#fig.show()
 
 ### 2-channel comparisons
 Ca = C2
