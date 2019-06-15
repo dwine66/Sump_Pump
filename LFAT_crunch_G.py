@@ -47,7 +47,7 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     print (Title,' Mean:',roll_mean, '1s',roll_1s, 'Range:',roll_range)
     
     plt.figure(filename+'-'+ Title ,figsize=(8,10))   
-    plt.suptitle(filename +  ' :' + dt + ": "+ str(bc) + " pt boxcar "+ str(f_LFAT)+' Hz',fontsize=12 )
+    plt.suptitle(filename +  ' :' + dt + ": "+ str(bc) + " pt boxcar "+ str(round(f_LFAT,1))+' Hz',fontsize=12 )
     plt.subplots_adjust(hspace=0.35)
 
     plt.subplot(211)
@@ -185,7 +185,7 @@ d_col = C3 # Selected column
 
 #Define test regimes
 gap = 1 # Space between regimes
-SF = 1
+SF = 1 # Sample Rate scaling factor
 
 # Test regime times(min)
 T1min = 1 # Tombstone 1
@@ -245,7 +245,7 @@ FSC_df = FS_df[int((FSC-FSS)-(Sample_Rate/f_LFAT)):int((FSC-FSS)+(Sample_Rate/f_
 T2C_df = T2_df[int((T2S-T2C)-(Sample_Rate/f_LFAT)):int((T2S-T2C)+(Sample_Rate/f_LFAT))]
 
 # Create dataframes for short-term differential data
-# This throws a warning - fix (use .loc)
+
 Ncyc = 5 # Number of cycles to display on either side of center point of run
 FS_3C_df = LFAT_df[FSC-Ncyc*int(Sample_Rate/f_LFAT):FSC+Ncyc*int(Sample_Rate/f_LFAT)]
 
@@ -253,6 +253,7 @@ diff12 = C1+'-'+C2
 diff13 = C1+'-'+C3
 diff23 = C2+'-'+C3
 
+# This throws a warning - fix (use .loc)
 FS_3C_df[diff12]= FS_3C_df[C1]-FS_3C_df[C2]
 FS_3C_df[diff13]= FS_3C_df[C1]-FS_3C_df[C3]
 FS_3C_df[diff23]= FS_3C_df[C2]-FS_3C_df[C3]
@@ -267,7 +268,7 @@ FS_3C_df[diff23]= FS_3C_df[C2]-FS_3C_df[C3]
 
 ### Basic Plots
 # Raw Data
-plt.figure('Raw Data',figsize=(9,9))
+plt.figure('Raw Data',figsize=(8,10))
 plt.suptitle(filename + ': Raw Data')
 plt.subplots_adjust(hspace = .35)
 
@@ -315,7 +316,7 @@ boxcar(100,FSMC_df,C0,C3,C3+' Boxcar - Full Speed Region')
 
 ### Selected column stats
 # Full Run for selected column
-plt.figure(d_col+': Full Run',figsize=(6,4))
+plt.figure(d_col+': Full Run',figsize=(10,8))
 plt.scatter(LFAT_df[t_col],LFAT_df[d_col],s=1,c='m')
 plt.title(filename +  ' ' + d_col + ': full run')
 plt.xlabel('time (sec.)')
@@ -323,7 +324,7 @@ plt.ylabel('disp (mm)')
 plt.show()
 
 # Full Speed Only
-plt.figure(d_col+': Full Speed Only',figsize=(6,4))
+plt.figure(d_col+': Full Speed Only',figsize=(10,8))
 plt.scatter(FS_df[t_col],FS_df[d_col],s=1,c='m')
 plt.title(filename +  ' ' + d_col + ': full speed')
 plt.xlabel('time (sec.)')
@@ -331,7 +332,7 @@ plt.ylabel('disp (mm)')
 plt.show()
 
 # Ramps and Tombstones
-plt.figure(d_col+': Ramps and Tombstones',figsize=(9,6))
+plt.figure(d_col+': Ramps and Tombstones',figsize=(10,8))
 plt.suptitle(filename + ' ' + d_col + ': ramps and tombstones (no boxcar)')
 plt.subplots_adjust(hspace=0.35)
 
@@ -358,7 +359,7 @@ plt.xlabel('time (sec.)')
 plt.show()
 
 # Short-term noise plots
-plt.figure(d_col+'- Short-Term Noise',figsize=(9,6))
+plt.figure(d_col+'- Short-Term Noise',figsize=(10,8))
 plt.suptitle(filename +  ' ' + d_col + '- short-term noise (no averaging)',fontsize=12)
 plt.subplots_adjust(hspace=0.35)
 
@@ -429,7 +430,7 @@ Cb = C3
 FS_2C_df = FSMC_df[[t_col,Ca,Cb]]
 FS_2C_df['diff']= FS_2C_df[Ca]-FS_2C_df[Cb]
 
-plt.figure('2-channel comparison',figsize=(9,10))
+plt.figure('2-channel comparison',figsize=(8,10))
 plt.suptitle(filename + ' ' + Ca+'-'+Cb + " Overlay" )
 plt.subplots_adjust(hspace=0.35,wspace=0.25)
 
@@ -457,7 +458,7 @@ plt.show()
 
 xl = FSC_df[C0].iloc[0]
 xh = FSC_df[C0].iloc[-1]
-Cfig = plt.figure(8,figsize=(11,8))
+Cfig = plt.figure(8,figsize=(10,8))
 #Cfig.subplots(sharex=True)
 #Cfig.xlim = ([xl,xh])
 Cfig.suptitle(filename +  '- displacement deltas' )
@@ -499,7 +500,7 @@ All_r = FS_3C_df.rolling(bc2).mean()
 All_r['v_shift'] = All_r[C_shift].shift(data_shift)
 # Subtract C2 from it
 All_r['diff'] = All_r['v_shift']-All_r[C_diff]
-plt.figure('2ch: 10pt Boxcar time shift',figsize=(9,6))
+plt.figure('2ch: 10pt Boxcar time shift',figsize=(10,8))
 plt.scatter(All_r[t_col],All_r[C1],s=1,c='r')
 plt.plot(All_r[t_col],All_r['v_shift'],'r',marker=None)
 plt.scatter(All_r[t_col],All_r[C2],s=1,c='b')
