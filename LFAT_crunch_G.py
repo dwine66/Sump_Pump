@@ -163,6 +163,8 @@ if L3_SF.isdigit():
 else:
     L3_SF=1.0
 
+#L1_SF=1.0
+
 f_LFAT = RPM/60 # Hertz  
 T_LFAT = 1/f_LFAT
 
@@ -181,7 +183,7 @@ print (filename,' read OK')
 
 # Define some names for Columns
 t_col = C0 # time column
-d_col = C3 # Selected column
+d_col = C1 # Selected column
 
 #Define test regimes
 gap = 1 # Space between regimes
@@ -316,7 +318,7 @@ boxcar(100,FSMC_df,C0,C3,C3+' Boxcar - Full Speed Region')
 
 ### Selected column stats
 # Full Run for selected column
-plt.figure(d_col+': Full Run',figsize=(10,8))
+plt.figure(filename+' '+d_col+': Full Run',figsize=(10,8))
 plt.scatter(LFAT_df[t_col],LFAT_df[d_col],s=1,c='m')
 plt.title(filename +  ' ' + d_col + ': full run')
 plt.xlabel('time (sec.)')
@@ -324,7 +326,7 @@ plt.ylabel('disp (mm)')
 plt.show()
 
 # Full Speed Only
-plt.figure(d_col+': Full Speed Only',figsize=(10,8))
+plt.figure(filename+' '+d_col+': Full Speed Only',figsize=(10,8))
 plt.scatter(FS_df[t_col],FS_df[d_col],s=1,c='m')
 plt.title(filename +  ' ' + d_col + ': full speed')
 plt.xlabel('time (sec.)')
@@ -332,7 +334,7 @@ plt.ylabel('disp (mm)')
 plt.show()
 
 # Ramps and Tombstones
-plt.figure(d_col+': Ramps and Tombstones',figsize=(10,8))
+plt.figure(filename+' '+d_col+': Ramps and Tombstones',figsize=(10,8))
 plt.suptitle(filename + ' ' + d_col + ': ramps and tombstones (no boxcar)')
 plt.subplots_adjust(hspace=0.35)
 
@@ -359,7 +361,7 @@ plt.xlabel('time (sec.)')
 plt.show()
 
 # Short-term noise plots
-plt.figure(d_col+'- Short-Term Noise',figsize=(10,8))
+plt.figure(filename+' '+d_col+'- Short-Term Noise',figsize=(10,8))
 plt.suptitle(filename +  ' ' + d_col + '- short-term noise (no averaging)',fontsize=12)
 plt.subplots_adjust(hspace=0.35)
 
@@ -430,7 +432,7 @@ Cb = C3
 FS_2C_df = FSMC_df[[t_col,Ca,Cb]]
 FS_2C_df['diff']= FS_2C_df[Ca]-FS_2C_df[Cb]
 
-plt.figure('2-channel comparison',figsize=(8,10))
+plt.figure(filename +' 2-channel comparison',figsize=(8,10))
 plt.suptitle(filename + ' ' + Ca+'-'+Cb + " Overlay" )
 plt.subplots_adjust(hspace=0.35,wspace=0.25)
 
@@ -500,7 +502,7 @@ All_r = FS_3C_df.rolling(bc2).mean()
 All_r['v_shift'] = All_r[C_shift].shift(data_shift)
 # Subtract C2 from it
 All_r['diff'] = All_r['v_shift']-All_r[C_diff]
-plt.figure('2ch: 10pt Boxcar time shift',figsize=(10,8))
+plt.figure(filename+' 2ch: 10pt Boxcar time shift',figsize=(10,8))
 plt.scatter(All_r[t_col],All_r[C1],s=1,c='r')
 plt.plot(All_r[t_col],All_r['v_shift'],'r',marker=None)
 plt.scatter(All_r[t_col],All_r[C2],s=1,c='b')
