@@ -47,7 +47,7 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     print (Title,' Mean:',roll_mean, '1s',roll_1s, 'Range:',roll_range)
     
     plt.figure(filename+'-'+ Title ,figsize=(8,10))   
-    plt.suptitle(filename +  ' :' + dt + ": "+ str(bc) + " pt boxcar "+ str(round(f_LFAT,1))+' Hz',fontsize=12 )
+    plt.suptitle(filename +  ' :' + dt + ": "+ str(bc) + " pt boxcar "+ str(round(f_LFAT,3))+' Hz',fontsize=12 )
     plt.subplots_adjust(hspace=0.35)
 
     plt.subplot(211)
@@ -165,7 +165,7 @@ else:
 
 #L1_SF=1.0
 
-f_LFAT = RPM/60 # Hertz  
+f_LFAT = RPM/60.0 # Hertz  
 T_LFAT = 1/f_LFAT
 
 # Dataframe Headers
@@ -183,7 +183,7 @@ print (filename,' read OK')
 
 # Define some names for Columns
 t_col = C0 # time column
-d_col = C1 # Selected column
+d_col = C3 # Selected column
 
 #Define test regimes
 gap = 1 # Space between regimes
