@@ -79,7 +79,7 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
 #    plt.ylabel('disp (mm)')
 #    plt.xlabel('time (sec.)')
 
-    return()
+    return(roll_avg)
 
 def Get_File():
     tk.Tk().withdraw() # Close the root window
@@ -292,9 +292,9 @@ plt.ylabel('disp (mm)')
 plt.show()
 
 ### ST Absolute Plots
-boxcar(100,FS_3C_df,C0,C1,'Boxcar - Absolute ST ' + C1)
-boxcar(100,FS_3C_df,C0,C2,'Boxcar - Absolute ST ' + C2)
-boxcar(100,FS_3C_df,C0,C3,'Boxcar - Absolute ST ' + C3)
+C1_bc = boxcar(100,FS_3C_df,C0,C1,'Boxcar - Absolute ST ' + C1)
+C2_bc = boxcar(100,FS_3C_df,C0,C2,'Boxcar - Absolute ST ' + C2)
+C3_bc = boxcar(100,FS_3C_df,C0,C3,'Boxcar - Absolute ST ' + C3)
 
 ### Differentials
 boxcar(100,FS_3C_df,C0, diff12,'Boxcar - ST diff12')
