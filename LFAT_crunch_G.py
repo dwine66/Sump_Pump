@@ -256,6 +256,7 @@ diff13 = C1+'-'+C3
 diff23 = C2+'-'+C3
 
 # This throws a warning - fix (use .loc)
+# This takes the difference of the un-averaged data - very noisy!
 FS_3C_df[diff12]= FS_3C_df[C1]-FS_3C_df[C2]
 FS_3C_df[diff13]= FS_3C_df[C1]-FS_3C_df[C3]
 FS_3C_df[diff23]= FS_3C_df[C2]-FS_3C_df[C3]
@@ -295,6 +296,8 @@ plt.show()
 C1_bc = boxcar(100,FS_3C_df,C0,C1,'Boxcar - Absolute ST ' + C1)
 C2_bc = boxcar(100,FS_3C_df,C0,C2,'Boxcar - Absolute ST ' + C2)
 C3_bc = boxcar(100,FS_3C_df,C0,C3,'Boxcar - Absolute ST ' + C3)
+
+Ctest = C2_bc-C3_bc
 
 ### Differentials
 boxcar(100,FS_3C_df,C0, diff12,'Boxcar - ST diff12')
