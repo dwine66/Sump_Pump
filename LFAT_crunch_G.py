@@ -1,4 +1,4 @@
-    # -*- coding: utf-8 -*-
+        # -*- coding: utf-8 -*-
     
     # Platting data
     
@@ -33,10 +33,10 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     BC_df[tb] = Input_Frame[tb]
     BC_df[dt] = Input_Frame[dt]
     
-    roll_avg = BC_df[dt].rolling(bc).mean()
-    roll_std = BC_df[dt].rolling(bc).std()
-    roll_max = BC_df[dt].rolling(bc).max()
-    roll_min = BC_df[dt].rolling(bc).min()
+    roll_avg = BC_df[dt].rolling(bc,center=True).mean()
+    roll_std = BC_df[dt].rolling(bc,center=True).std()
+    roll_max = BC_df[dt].rolling(bc,center=True).max()
+    roll_min = BC_df[dt].rolling(bc,center=True).min()
     
     # roll_mean is the average of the means of each boxcar window
     # This is the best estimate of the z height at that time point
@@ -63,8 +63,8 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     plt.title('Stability around Mean- '+ '1s: '+str(roll_1s)+' Range: '+str(roll_range), fontsize = 12)
     plt.plot(BC_df[tb],roll_avg-roll_mean, 'm.',ms=2)
 #    plt.errorbar(BC_df[tb],roll_avg-roll_mean,yerr=roll_std,'m.',ms=2)
-    plt.plot(BC_df[tb],roll_max, 'w.',ms=1)
-    plt.plot(BC_df[tb],roll_min, 'w.',ms=1)
+    plt.plot(BC_df[tb],roll_max-roll_mean, 'w.',ms=1)
+    plt.plot(BC_df[tb],roll_min-roll_mean, 'w.',ms=1)
     plt.ylim([-0.6,0.6])
     #plt.xlabel('time (sec.)')
     plt.ylabel('disp (mm)')
@@ -183,7 +183,7 @@ print (filename,' read OK')
 
 # Define some names for Columns
 t_col = C0 # time column
-d_col = C3 # Selected column
+d_col = C1 # Selected column
 
 #Define test regimes
 gap = 1 # Space between regimes
