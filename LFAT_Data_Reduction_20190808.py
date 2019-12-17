@@ -191,7 +191,7 @@ print (filename,' read OK')
 
 # Define some names for Columns
 t_col = C0 # time column
-d_col = C1 # Selected column
+d_col = C3 # Selected column
 
 #Define test regimes
 gap = 1 # Space between regimes
