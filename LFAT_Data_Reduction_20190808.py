@@ -1,8 +1,16 @@
-    # -*- coding: utf-8 -*-
+''' Intellectual Ventures CONFIDENTIAL-SUBJECT TO NDA
+This document contains confidential information that shall be distributed, routed 
+or made available solely in accordance with a nondisclosure agreement (NDA).  
+Copyright © 2018 Intellectual Ventures Management, LLC (IV).  All rights reserved.
+'''
+# LFAT Data Reduction v 1.0
+# 8/8/2019 DWW
+
+# -*- coding: utf-8 -*-
     
-    # Platting data
+# Platting data
     
-    ### Libraries
+### Libraries
 import csv
 import numpy as np
 import scipy as sp
@@ -33,23 +41,25 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     BC_df[tb] = Input_Frame[tb]
     BC_df[dt] = Input_Frame[dt]
     
-    roll_avg = BC_df[dt].rolling(bc).mean()
-    roll_std = BC_df[dt].rolling(bc).std()
-    roll_max = BC_df[dt].rolling(bc).max()
-    roll_min = BC_df[dt].rolling(bc).min()
+    roll_avg = BC_df[dt].rolling(bc,center=True).mean()
+    roll_std = BC_df[dt].rolling(bc,center=True).std()
+    roll_max = BC_df[dt].rolling(bc,center=True).max()
+    roll_min = BC_df[dt].rolling(bc,center=True).min()
     
-    roll_range = round((roll_max-roll_min).mean(),3)
     # roll_mean is the average of the means of each boxcar window
-    roll_mean = roll_avg.mean()
+    # This is the best estimate of the z height at that time point
+    roll_mean = round(roll_avg.mean(),3)
+    roll_1s = round(roll_avg.std(),3)
+    roll_range = round(roll_avg.max()-roll_avg.min(),3)
     
-    print (Title,' Mean:',round(roll_mean,3), 'Range:',roll_range)
+    print (Title,' Mean:',roll_mean, '1s',roll_1s, 'Range:',roll_range)
     
-    plt.figure(filename+'-'+ Title,figsize=(8,10))   
-    plt.suptitle(filename +  ' :' + dt + ": "+ str(bc) + " pt rolling statistics" )
+    plt.figure(filename+'-'+ Title ,figsize=(8,10))   
+    plt.suptitle(filename +  ' :' + dt + ": "+ str(bc) + " pt boxcar "+ str(round(f_LFAT,3))+' Hz',fontsize=12 )
     plt.subplots_adjust(hspace=0.35)
 
-    plt.subplot(311)
-    plt.title(Title)
+    plt.subplot(211)
+    plt.title(Title+' Mean: '+str(roll_mean), fontsize=12)
     plt.plot(BC_df[tb],roll_avg, 'm.',ms=1)
    #plt.plot(BC_df[tb],roll_max, 'k.',ms=1)
     #plt.plot(BC_df[tb],roll_min, 'k.',ms=1)
@@ -57,25 +67,27 @@ def boxcar(bc_width,Input_Frame,tb,dt,Title):
     #plt.xlabel('time (sec.)')
     plt.ylabel('disp (mm)')
 
-    plt.subplot(312)
-    plt.title('Stability around mean')
+    plt.subplot(212)
+    plt.title('Stability around Mean- '+ '1s: '+str(roll_1s)+' Range: '+str(roll_range), fontsize = 12)
     plt.plot(BC_df[tb],roll_avg-roll_mean, 'm.',ms=2)
 #    plt.errorbar(BC_df[tb],roll_avg-roll_mean,yerr=roll_std,'m.',ms=2)
+    plt.plot(BC_df[tb],roll_max-roll_mean, 'w.',ms=1)
+    plt.plot(BC_df[tb],roll_min-roll_mean, 'w.',ms=1)
     plt.ylim([-0.6,0.6])
     #plt.xlabel('time (sec.)')
     plt.ylabel('disp (mm)')
     plt.show()
     
-    plt.subplot(313)
-    plt.plot(BC_df[tb],roll_std, 'm.',ms=1)
-    plt.plot(BC_df[tb],roll_max, 'w.',ms=1)
-    plt.plot(BC_df[tb],roll_min, 'w.',ms=1)
-    #plt.ylim([0,0.6])
-    plt.title('1s: ')
-    plt.ylabel('disp (mm)')
-    plt.xlabel('time (sec.)')
+#    plt.subplot(313)
+#    plt.plot(BC_df[tb],roll_std, 'm.',ms=1)
+#    plt.plot(BC_df[tb],roll_max, 'w.',ms=1)
+#    plt.plot(BC_df[tb],roll_min, 'w.',ms=1)
+#    #plt.ylim([0,0.6])
+#    plt.title('1s: ')
+#    plt.ylabel('disp (mm)')
+#    plt.xlabel('time (sec.)')
 
-    return()
+    return(roll_avg)
 
 def Get_File():
     tk.Tk().withdraw() # Close the root window
@@ -83,7 +95,10 @@ def Get_File():
     print (in_path)
     tk.Tk().destroy()
     return in_path
+
 ### Constants
+#Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_MD (L2)', 'Slat_3_TE (L3)','Comments']
+#Headers = ['time (sec)','Slat_5_LE (L1)','Slat_4_TE (L2)', 'Slat_4_C (L3)','Comments']
 
 
 ### Variables
@@ -123,7 +138,7 @@ Date = Header_Line[1][5:]
 Machine_Name = Header_Line[2][8:]
 Test_Type = Header_Line[3][10:]
 RPM = float(Header_Line[4][9:])
-Test_Duration = float(Header_Line[5][34:])
+FS_Duration = float(Header_Line[5][34:])
 Laser_1_lst=Header_Line[7].split(',')
 Laser_2_lst=Header_Line[8].split(',')
 Laser_3_lst=Header_Line[9].split(',') 
@@ -156,7 +171,9 @@ if L3_SF.isdigit():
 else:
     L3_SF=1.0
 
-f_LFAT = RPM/60 # Hertz  
+#L1_SF=1.0
+
+f_LFAT = RPM/60.0 # Hertz  
 T_LFAT = 1/f_LFAT
 
 # Dataframe Headers
@@ -178,12 +195,12 @@ d_col = C3 # Selected column
 
 #Define test regimes
 gap = 1 # Space between regimes
-SF = 1
+SF = 1 # Sample Rate scaling factor
 
 # Test regime times(min)
 T1min = 1 # Tombstone 1
 R1min = 0.5 # Ramp 1
-FSmin = 3.5 # Full Speed
+FSmin = FS_Duration # Full Speed
 R2min = 0.5 # Ramp 2
 T2min = 1 # Tombstone 2
 
@@ -238,7 +255,7 @@ FSC_df = FS_df[int((FSC-FSS)-(Sample_Rate/f_LFAT)):int((FSC-FSS)+(Sample_Rate/f_
 T2C_df = T2_df[int((T2S-T2C)-(Sample_Rate/f_LFAT)):int((T2S-T2C)+(Sample_Rate/f_LFAT))]
 
 # Create dataframes for short-term differential data
-# This throws a warning - fix (use .loc)
+
 Ncyc = 5 # Number of cycles to display on either side of center point of run
 FS_3C_df = LFAT_df[FSC-Ncyc*int(Sample_Rate/f_LFAT):FSC+Ncyc*int(Sample_Rate/f_LFAT)]
 
@@ -246,6 +263,8 @@ diff12 = C1+'-'+C2
 diff13 = C1+'-'+C3
 diff23 = C2+'-'+C3
 
+# This throws a warning - fix (use .loc)
+# This takes the difference of the un-averaged data - very noisy!
 FS_3C_df[diff12]= FS_3C_df[C1]-FS_3C_df[C2]
 FS_3C_df[diff13]= FS_3C_df[C1]-FS_3C_df[C3]
 FS_3C_df[diff23]= FS_3C_df[C2]-FS_3C_df[C3]
@@ -260,7 +279,7 @@ FS_3C_df[diff23]= FS_3C_df[C2]-FS_3C_df[C3]
 
 ### Basic Plots
 # Raw Data
-plt.figure('Raw Data',figsize=(9,9))
+plt.figure('Raw Data',figsize=(8,10))
 plt.suptitle(filename + ': Raw Data')
 plt.subplots_adjust(hspace = .35)
 
@@ -282,9 +301,11 @@ plt.ylabel('disp (mm)')
 plt.show()
 
 ### ST Absolute Plots
-boxcar(100,FS_3C_df,C0,C1,'Boxcar - Absolute ST ' + C1)
-boxcar(100,FS_3C_df,C0,C2,'Boxcar - Absolute ST ' + C2)
-boxcar(100,FS_3C_df,C0,C3,'Boxcar - Absolute ST ' + C3)
+C1_bc = boxcar(100,FS_3C_df,C0,C1,'Boxcar - Absolute ST ' + C1)
+C2_bc = boxcar(100,FS_3C_df,C0,C2,'Boxcar - Absolute ST ' + C2)
+C3_bc = boxcar(100,FS_3C_df,C0,C3,'Boxcar - Absolute ST ' + C3)
+
+Ctest = C2_bc-C3_bc
 
 ### Differentials
 boxcar(100,FS_3C_df,C0, diff12,'Boxcar - ST diff12')
@@ -308,7 +329,7 @@ boxcar(100,FSMC_df,C0,C3,C3+' Boxcar - Full Speed Region')
 
 ### Selected column stats
 # Full Run for selected column
-plt.figure(d_col+': Full Run',figsize=(6,4))
+plt.figure(filename+' '+d_col+': Full Run',figsize=(10,8))
 plt.scatter(LFAT_df[t_col],LFAT_df[d_col],s=1,c='m')
 plt.title(filename +  ' ' + d_col + ': full run')
 plt.xlabel('time (sec.)')
@@ -316,7 +337,7 @@ plt.ylabel('disp (mm)')
 plt.show()
 
 # Full Speed Only
-plt.figure(d_col+': Full Speed Only',figsize=(6,4))
+plt.figure(filename+' '+d_col+': Full Speed Only',figsize=(10,8))
 plt.scatter(FS_df[t_col],FS_df[d_col],s=1,c='m')
 plt.title(filename +  ' ' + d_col + ': full speed')
 plt.xlabel('time (sec.)')
@@ -324,8 +345,8 @@ plt.ylabel('disp (mm)')
 plt.show()
 
 # Ramps and Tombstones
-plt.figure(d_col+': Ramps and Tombstones',figsize=(9,6))
-plt.suptitle(filename + ' ' + d_col + ': ramps and tombstones')
+plt.figure(filename+' '+d_col+': Ramps and Tombstones',figsize=(10,8))
+plt.suptitle(filename + ' ' + d_col + ': ramps and tombstones (no boxcar)')
 plt.subplots_adjust(hspace=0.35)
 
 plt.subplot(221)
@@ -351,8 +372,8 @@ plt.xlabel('time (sec.)')
 plt.show()
 
 # Short-term noise plots
-plt.figure(d_col+'- Short-Term Noise',figsize=(9,6))
-plt.suptitle(filename +  ' ' + d_col + '- short-term noise')
+plt.figure(filename+' '+d_col+'- Short-Term Noise',figsize=(10,8))
+plt.suptitle(filename +  ' ' + d_col + '- short-term noise (no averaging)',fontsize=12)
 plt.subplots_adjust(hspace=0.35)
 
 plt.subplot(311)
@@ -392,28 +413,28 @@ print('T2 mean, 1s, range for channel',d_col,': ', T2_m, T2_s,T2_r)
 
 ### FFT Analysis
 # https://ipython-books.github.io/101-analyzing-the-frequency-components-of-a-signal-with-a-fast-fourier-transform/
-
-FFT_tb = FS_df
-t_R1 = str(FFT_tb[C0].iloc[0])
-t_R2 = str(FFT_tb[C0].iloc[-1])
-FFT_C = FSC-FSS
-FSC2_df = FFT_tb[int(FFT_C-(10*Sample_Rate/f_LFAT)):int(10*FFT_C+(Sample_Rate/f_LFAT))]
-
-time = pd.to_numeric(FSC2_df[t_col])
-Disp = pd.to_numeric(FSC2_df[d_col])
-disp_fft = sp.fftpack.fft(Disp)
-disp_psd = np.abs(disp_fft)**2
-
-fftfreq = sp.fftpack.fftfreq(len(disp_psd),1/Sample_Rate)
-i = fftfreq > 0
-fig, ax = plt.subplots(1, 1, figsize=(9, 6))
-fig.suptitle(filename + ' '+ d_col + ' ' + t_R1+' to '+t_R2 + ' sec: FFT' )
-ax.plot(fftfreq[i], 10 * np.log10(disp_psd[i]))
-ax.set_xlim(0, 10*f_LFAT)
-ax.set_xticks(np.arange(0, 10*f_LFAT, step=f_LFAT))
-ax.set_xlabel('Frequency (Hz)')
-ax.set_ylabel('PSD (dB)')
-fig.show()
+#print ('Starting FFT analysis')
+#FFT_tb = FS_df
+#t_R1 = str(FFT_tb[C0].iloc[0])
+#t_R2 = str(FFT_tb[C0].iloc[-1])
+#FFT_C = FSC-FSS
+#FSC2_df = FFT_tb[int(FFT_C-(10*Sample_Rate/f_LFAT)):int(10*FFT_C+(Sample_Rate/f_LFAT))]
+#
+#time = pd.to_numeric(FSC2_df[t_col])
+#Disp = pd.to_numeric(FSC2_df[d_col])
+#disp_fft = sp.fftpack.fft(Disp)
+#disp_psd = np.abs(disp_fft)**2
+#
+#fftfreq = sp.fftpack.fftfreq(len(disp_psd),1/Sample_Rate)
+#i = fftfreq > 0
+#fig, ax = plt.subplots(1, 1, figsize=(9, 6))
+#fig.suptitle(filename + ' '+ d_col + ' ' + t_R1+' to '+t_R2 + ' sec: FFT' )
+#ax.plot(fftfreq[i], 10 * np.log10(disp_psd[i]))
+#ax.set_xlim(0, 10*f_LFAT)
+#ax.set_xticks(np.arange(0, 10*f_LFAT, step=f_LFAT))
+#ax.set_xlabel('Frequency (Hz)')
+#ax.set_ylabel('PSD (dB)')
+#fig.show()
 
 ### 2-channel comparisons
 Ca = C2
@@ -422,7 +443,7 @@ Cb = C3
 FS_2C_df = FSMC_df[[t_col,Ca,Cb]]
 FS_2C_df['diff']= FS_2C_df[Ca]-FS_2C_df[Cb]
 
-plt.figure('2-channel comparison',figsize=(9,10))
+plt.figure(filename +' 2-channel comparison',figsize=(8,10))
 plt.suptitle(filename + ' ' + Ca+'-'+Cb + " Overlay" )
 plt.subplots_adjust(hspace=0.35,wspace=0.25)
 
@@ -450,7 +471,7 @@ plt.show()
 
 xl = FSC_df[C0].iloc[0]
 xh = FSC_df[C0].iloc[-1]
-Cfig = plt.figure(8,figsize=(11,8))
+Cfig = plt.figure(8,figsize=(10,8))
 #Cfig.subplots(sharex=True)
 #Cfig.xlim = ([xl,xh])
 Cfig.suptitle(filename +  '- displacement deltas' )
@@ -492,7 +513,7 @@ All_r = FS_3C_df.rolling(bc2).mean()
 All_r['v_shift'] = All_r[C_shift].shift(data_shift)
 # Subtract C2 from it
 All_r['diff'] = All_r['v_shift']-All_r[C_diff]
-plt.figure('2ch: 10pt Boxcar time shift',figsize=(9,6))
+plt.figure(filename+' 2ch: 10pt Boxcar time shift',figsize=(10,8))
 plt.scatter(All_r[t_col],All_r[C1],s=1,c='r')
 plt.plot(All_r[t_col],All_r['v_shift'],'r',marker=None)
 plt.scatter(All_r[t_col],All_r[C2],s=1,c='b')
