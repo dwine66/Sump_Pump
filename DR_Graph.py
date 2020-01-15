@@ -48,13 +48,27 @@ DR_OE_df = DR_Type_df.filter(like='Other Work - Exp',axis=0)
 DR_2LI_df = DR_Type_df.filter(like='LFAT-2L (Initial)',axis=0)
 DR_2LR_df = DR_Type_df.filter(like='LFAT-2L (Rebuilt)',axis=0)
 DR_8LA_df = DR_Type_df.filter(like='LFAT-8L (A only)',axis=0)
+DR_UoM_LES_df = DR_Type_df.filter(like='UoM LES',axis=0)
+DR_8L_ABCD_df = DR_Type_df.filter(like='LFAT-8L (ABCD) - CHWA',axis=0)
+DR_8L_FE_df = DR_Type_df.filter(like='LFAT-8L (ABCD) - FE',axis=0)
 
-plt.scatter(DR_Type_df['Retau'],DR_Type_df['DR%'])
-plt.scatter(DR_OC_df['Retau'],DR_OC_df['DR%'],marker="x")
-plt.scatter(DR_OE_df['Retau'],DR_OE_df['DR%'],marker=".")
-plt.scatter(DR_2LI_df['Retau'],DR_2LI_df['DR%'],marker="o")
-plt.scatter(DR_2LR_df['Retau'],DR_2LR_df['DR%'],marker=",")
-plt.scatter(DR_8LA_df['Retau'],DR_8LA_df['DR%'],marker="b")
+#plt.scatter(DR_Type_df['Retau'],DR_Type_df['DR%'])
+fig = plt.figure()
+fig.subplots_adjust(top=0.8)
+ax1 = fig.add_subplot(111)
+
+ax1.scatter(DR_OC_df['Retau'],DR_OC_df['DR%'],marker="x",c='k',s=15)
+ax1.scatter(DR_OE_df['Retau'],DR_OE_df['DR%'],marker="+",c='k',s=15)
+ax1.scatter(DR_2LI_df['Retau'],DR_2LI_df['DR%'],marker="o", c='w')
+ax1.scatter(DR_2LR_df['Retau'],DR_2LR_df['DR%'],marker="o", c='y')
+ax1.scatter(DR_8LA_df['Retau'],DR_8LA_df['DR%'],marker="o", c='g')
+ax1.scatter(DR_UoM_LES_df['Retau'],DR_UoM_LES_df['DR%'],marker="^")
+ax1.scatter(DR_8L_ABCD_df['Retau'],DR_8L_ABCD_df['DR%'],marker="s")
+ax1.scatter(DR_8L_FE_df['Retau'],DR_8L_FE_df['DR%'],marker="s", c='r')
+
+ax1.set_xlabel('Re.tau')
+ax1.set_ylabel('% Drag Reduction')
+ax1.set_title('Drag Reduction vs. Retau')
 
 plt.show
 
