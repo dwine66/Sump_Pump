@@ -43,8 +43,20 @@ DR_df.set_index('Dataset',inplace = True)
 # Create dataframe
 
 DR_Type_df = DR_df[['Retau','DR%']]
+DR_OC_df = DR_Type_df.filter(like='Other Work - Comp',axis=0)
+DR_OE_df = DR_Type_df.filter(like='Other Work - Exp',axis=0)
+DR_2LI_df = DR_Type_df.filter(like='LFAT-2L (Initial)',axis=0)
+DR_2LR_df = DR_Type_df.filter(like='LFAT-2L (Rebuilt)',axis=0)
+DR_8LA_df = DR_Type_df.filter(like='LFAT-8L (A only)',axis=0)
 
 plt.scatter(DR_Type_df['Retau'],DR_Type_df['DR%'])
+plt.scatter(DR_OC_df['Retau'],DR_OC_df['DR%'],marker="x")
+plt.scatter(DR_OE_df['Retau'],DR_OE_df['DR%'],marker=".")
+plt.scatter(DR_2LI_df['Retau'],DR_2LI_df['DR%'],marker="o")
+plt.scatter(DR_2LR_df['Retau'],DR_2LR_df['DR%'],marker=",")
+plt.scatter(DR_8LA_df['Retau'],DR_8LA_df['DR%'],marker="b")
+
+plt.show
 
 ### Plotting
 fig = plt.figure()  # an empty figure with no axes
